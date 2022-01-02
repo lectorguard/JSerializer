@@ -2,6 +2,8 @@
 //
 
 #include <iostream>
+#include <string>
+#include <set>
 #include "JSerializer.h"
 
 
@@ -12,47 +14,86 @@ enum class TestEnum
     EX = 4
 };
 
-struct Foo : public Serializable
+
+
+struct Foo : public JSerializable
 {
     Foo()
     {
-        SETUP(number, text, fpNumber, vector, isTrue);
-        AddValidation([this]() 
+        JSER_ADD_ITEMS(number, testEnum);
+        JSER_ADD_VAL(
             {
-                assert(number < 6);
-                assert(vector.size() > 0);
-            });
-    }
-
-    void toString() {
-        std::cout << "number" << "  " << number << " | " << "text" << "  " << text << " | " << "fpNumber" << "  " << fpNumber << " | " << "vector" << "  ";
-        std::cout << " [ ";
-        for(auto elem : vector)
-        {
-            std::cout << elem << " , ";
-        }
-        std::cout << " ] ";
-        std::cout << "TestEnum" << "  " << (int)testEnum;
-        std::cout << std::endl;
+                assert(number < INT32_MAX);
+            }
+        );
     }
 
 private:
-    bool isTrue = false;
     int32_t number = 5;
-    std::string text = "Hello World";
-    float fpNumber = 12.5f;
-    std::vector<double> vector = { 12.3, 15.4 };
     TestEnum testEnum = TestEnum::HALLO;
 };
 
+struct Poo : public JSerializable
+{
+    Poo() {
+        JSER_ADD_ITEMS(isTrue);
+        JSER_ADD_ITEMS(vector);
+        JSER_ADD_VAL(
+            {
+                assert(vector.size() > 0);
+            }
+        );
+    }
+
+private:
+    std::vector<double> vector = { 12.3, 15.4 }; 
+    bool isTrue = false;
+};
+
+
+struct Inherit : public Poo
+{
+    Inherit() { JSER_ADD_ITEMS(pc, foo); }
+    
+private:
+    std::map<std::string, int> pc = { {"CPU", 10}, { "GPU", 15 }, { "RAM", 20 }, };
+    Foo foo;
+    
+};
+
+struct Outer : public JSerializable {
+
+    Outer()
+    {
+        myInt = new int8_t(7);
+        JSER_ADD_ITEMS(m, charSet, n, *myInt);
+    }
+
+private:
+
+    struct Inner : public JSerializable
+    {
+        Inner()
+        {
+            JSER_ADD_ITEMS(string);
+        }
+    private:
+        std::string string = "I am in a class ";
+    } n;
+    std::map<std::string, int> m = { {"CPU", 10}, { "GPU", 15 }, { "RAM", 20 }, };
+    std::set<char> charSet = { 'H','e', 'l','o' };
+    int8_t* myInt; 
+};
 
 
 int main()
 {
-    Foo foo;
-    std::cout << foo.SerializeObject() << std::endl;
-    foo.DeserializeObject(R"({"fpNumber":12.5,"number":0,"text":"Something else","vector":[1.3,2.7],"isTrue":false,"testEnum":4})");
-    foo.toString();
+    Outer outer;
+    std::cout << outer.SerializeObjectString() << std::endl;
+    // {"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}}
+    outer.DeserializeObject(R"({"*myInt":11,"charSet":[72,101,109,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}})");
+    std::cout << outer.SerializeObjectString() << std::endl;
+    // {"charSet":[1,11,77,121],"m":{"CPU":109,"GPU":109,"RAM":109},"n":{"string":"I am happy "}}
     return 0;
 }
 

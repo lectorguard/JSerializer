@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <assert.h>
@@ -10,8 +11,6 @@
 #define EXPAND( x ) x
 #define F(x, ...) X = x and VA_ARGS = __VA_ARGS__
 #define G(...) EXPAND( F(__VA_ARGS__) )
-
-//#define TEST(code, v1, v2, v3) std::invoke(code,v1); std::invoke(code,v2); std::invoke(code,v3);
 
 
 // Make a FOREACH macro
@@ -46,81 +45,118 @@
 #define OPEN_BRACKET  {
 #define CLOSE_BRACKET }
 // Helper function
-#define SETUP(...) SetUpSerialization(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
+#define JSER_ADD_ITEMS(...) AddSerializeItems(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
+#define JSER_ADD_VAL(x) AddValidation([this]()x)
 
 
+struct SerializeItem
+{
+    std::vector<std::string> ParameterNames = {};
+    std::function<void(nlohmann::json&, std::vector<std::string>&)> SerializeCB = nullptr;
+    std::function<void(nlohmann::json&, std::vector<std::string>&)> DeserializeCB = nullptr;
+};
 
-struct Serializable {
+struct JSerializable {
 
-    std::string SerializeObject();
+    virtual ~JSerializable() {};
+
+    std::string SerializeObjectString();
+    nlohmann::json SerializeObjectJson();
     void DeserializeObject(nlohmann::json j);
     void DeserializeObject(const char* json);
     void DeserializeObject(std::string json);
     void AddValidation(std::function<void()> validationFunction);
 
     template<typename...O>
-    constexpr void SetUpSerialization(const std::vector<std::string> names, O&& ... objects)
+    constexpr void AddSerializeItems(const std::vector<std::string> names, O&& ... objects)
     {
         assert(names.size() == sizeof...(objects) && "for each name there must be a parameter");
 
-        ParameterNames = names;
-
-        SerializeCB = [this, tup = std::forward_as_tuple(objects...)]()
-        {
-            return std::apply([this](auto &&... args)
-                {
-                    nlohmann::json j;
-                    serialize(j, ParameterNames, args...);
-                    return j.dump();
-                }, tup);
-        };
-
-        DeserializeCB = [this, tup = std::forward_as_tuple(objects...)](nlohmann::json j) mutable
-        {
-            std::apply([this, j](auto &&... args)
-                {
-                    deserialize(j, ParameterNames, args...);
-                }, tup);
-        };
+        SerializeChunks.push_back({
+            names,
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, std::vector<std::string> parameterNames)
+            {
+                std::apply([&parameterNames,&j](auto &&... args)
+                    {
+                        Serialize(j, parameterNames, args...);
+                    }, tup);
+            },
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json j, std::vector<std::string> parameterNames) mutable
+            {
+                std::apply([&parameterNames, &j](auto &&... args)
+                    {
+                        Deserialize(j, parameterNames, args...);
+                    }, tup);
+            }
+            });
     };
 
 private:
     template <int I, class... Ts>
-    decltype(auto) get(Ts&&... ts) {
+    constexpr static decltype(auto) get(Ts&&... ts) {
         return std::get<I>(std::forward_as_tuple(ts...));
     }
 
     template<size_t index = 0, typename...O>
-    constexpr void serialize(nlohmann::json& j, const std::vector<std::string> names, O&& ... objects)
+    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, O&& ... objects)
     {
-        using CurrentType = std::remove_reference<decltype(get<index>(objects...))>::type;
+        auto& elem = get<index>(objects...);
+
+        using CurrentType = std::remove_reference<decltype(elem)>::type;
         static_assert(!std::is_pointer<CurrentType>::value, "Serialization does not support pointer types");
 
-        j[names[index]] = get<index>(objects...);
+        assert(!j.contains(names[index]) && "You can not serialize one variable twice");
+        
+        if constexpr (std::is_polymorphic_v<CurrentType>) 
+        {
+            if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
+            {
+                j[names[index]] = serializable->SerializeObjectJson();
+            }
+            // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
+            else std::cout << names[index] << " could not be serialized !!! Please check if object inherits from Serializable" << std::endl;
+        }
+        else
+        {
+            j[names[index]] = elem;
+        }
+        
 
         if constexpr (index + 1 < sizeof...(objects)) {
-            serialize<index + 1>(j, names, std::forward<O>(objects)...);
+            Serialize<index + 1>(j, names, std::forward<O>(objects)...);
         }
     }
 
     template<size_t index = 0, typename...O>
-    constexpr void deserialize(nlohmann::json j, const std::vector<std::string> names, O&& ... objects)
+    static void Deserialize(nlohmann::json j, const std::vector<std::string> names, O&& ... objects)
     {
+        auto& elem = get<index>(objects...);
+
         assert(j.contains(names[index]) && "parsed json contains non existing member variable");
+        using CurrentType = std::remove_reference<decltype(elem)>::type;
 
-        using CurrentType = std::remove_reference<decltype(get<index>(objects...))>::type;
-        get<index>(objects...) = j[names[index]].get<CurrentType>();
-
+        if constexpr (std::is_polymorphic_v<CurrentType>)
+        {
+            if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
+            {
+                serializable->DeserializeObject(j[names[index]]);
+            }
+            // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
+            else std::cout << names[index] << " could not be serialized !!! Please check if object inherits from Serializable" << std::endl;
+        }
+        else
+        {
+            elem = j[names[index]].get<CurrentType>();
+        }
+        
         if constexpr (index + 1 < sizeof...(objects))
         {
-            deserialize<index + 1>(j, names, std::forward<O>(objects)...);
+            Deserialize<index + 1>(j, names, std::forward<O>(objects)...);
         }
     }
 
     constexpr void executeValidation();
 
-    std::function<std::string()> SerializeCB = nullptr;
-    std::function<void(nlohmann::json)> DeserializeCB = nullptr;
-    std::vector<std::string> ParameterNames = {};
+    std::vector<SerializeItem> SerializeChunks = {};
     std::vector<std::function<void()>> Validation = {};
 };
