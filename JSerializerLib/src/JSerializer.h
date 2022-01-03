@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <map>
 #include <functional>
+#include <optional>
 #include "nlohmann/json.hpp"
 
 #define EXPAND( x ) x
@@ -49,22 +50,32 @@
 #define JSER_ADD_VAL(x) AddValidation([this]()x)
 
 
+enum class JSerError
+{
+    NO_ERROR,               // OK
+    JSON_ERROR,             // Error inside the json library
+    SETUP_MISSING_ERROR,    // You must call SetUpSerialization before you can call DeserializeObject
+    MEMBER_ERROR,           // Failed deserializing member variable
+    POLYMORPHIC_ERROR,      // Object is polymorphic but it does not inherit from JSerializable
+
+};
+
 struct SerializeItem
 {
     std::vector<std::string> ParameterNames = {};
-    std::function<void(nlohmann::json&, std::vector<std::string>&)> SerializeCB = nullptr;
-    std::function<void(nlohmann::json&, std::vector<std::string>&)> DeserializeCB = nullptr;
+    std::function<void(nlohmann::json&, std::vector<std::string>&, JSerError&)> SerializeCB = nullptr;
+    std::function<void(nlohmann::json&, std::vector<std::string>&, JSerError&)> DeserializeCB = nullptr;
 };
 
 struct JSerializable {
 
     virtual ~JSerializable() {};
 
-    std::string SerializeObjectString();
-    nlohmann::json SerializeObjectJson();
-    void DeserializeObject(nlohmann::json j);
-    void DeserializeObject(const char* json);
-    void DeserializeObject(std::string json);
+    std::optional<std::string> SerializeObjectString(JSerError& error);
+    std::optional<nlohmann::json> SerializeObjectJson(JSerError& error);
+    void DeserializeObject(nlohmann::json j, JSerError& error);
+    void DeserializeObject(const char* json, JSerError& error);
+    void DeserializeObject(std::string json,JSerError& error);
     void AddValidation(std::function<void()> validationFunction);
 
     template<typename...O>
@@ -74,18 +85,18 @@ struct JSerializable {
 
         SerializeChunks.push_back({
             names,
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, std::vector<std::string> parameterNames)
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, std::vector<std::string> parameterNames, JSerError& error)
             {
-                std::apply([&parameterNames,&j](auto &&... args)
+                std::apply([&parameterNames,&j, &error](auto &&... args)
                     {
-                        Serialize(j, parameterNames, args...);
+                        Serialize(j, parameterNames, error, args...);
                     }, tup);
             },
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json j, std::vector<std::string> parameterNames) mutable
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json j, std::vector<std::string> parameterNames, JSerError& error) mutable
             {
-                std::apply([&parameterNames, &j](auto &&... args)
+                std::apply([&parameterNames, &j, &error](auto &&... args)
                     {
-                        Deserialize(j, parameterNames, args...);
+                        Deserialize(j, parameterNames, error, args...);
                     }, tup);
             }
             });
@@ -98,23 +109,29 @@ private:
     }
 
     template<size_t index = 0, typename...O>
-    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, O&& ... objects)
+    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, JSerError& error, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
 
         using CurrentType = std::remove_reference<decltype(elem)>::type;
         static_assert(!std::is_pointer<CurrentType>::value, "Serialization does not support pointer types");
-
-        assert(!j.contains(names[index]) && "You can not serialize one variable twice");
         
         if constexpr (std::is_polymorphic_v<CurrentType>) 
         {
             if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
             {
-                j[names[index]] = serializable->SerializeObjectJson();
+                if (std::optional<nlohmann::json> subj = serializable->SerializeObjectJson(error))
+                {
+                    j[names[index]] = *subj;
+                }
+                else return;
             }
             // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-            else std::cout << names[index] << " could not be serialized !!! Please check if object inherits from Serializable" << std::endl;
+            else
+            {
+                error = JSerError::POLYMORPHIC_ERROR;
+                return;
+            }
         }
         else
         {
@@ -123,26 +140,35 @@ private:
         
 
         if constexpr (index + 1 < sizeof...(objects)) {
-            Serialize<index + 1>(j, names, std::forward<O>(objects)...);
+            Serialize<index + 1>(j, names, error, std::forward<O>(objects)...);
         }
     }
 
     template<size_t index = 0, typename...O>
-    static void Deserialize(nlohmann::json j, const std::vector<std::string> names, O&& ... objects)
+    static void Deserialize(nlohmann::json j, const std::vector<std::string> names, JSerError& error, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
 
-        assert(j.contains(names[index]) && "parsed json contains non existing member variable");
+        if (!j.contains(names[index]))
+        {
+            error = JSerError::MEMBER_ERROR;
+            return;
+        }
+
         using CurrentType = std::remove_reference<decltype(elem)>::type;
 
         if constexpr (std::is_polymorphic_v<CurrentType>)
         {
             if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
             {
-                serializable->DeserializeObject(j[names[index]]);
+                serializable->DeserializeObject(j[names[index]], error);
             }
             // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-            else std::cout << names[index] << " could not be serialized !!! Please check if object inherits from Serializable" << std::endl;
+            else 
+            {
+                error = JSerError::POLYMORPHIC_ERROR;
+                return;
+            }
         }
         else
         {
@@ -151,7 +177,7 @@ private:
         
         if constexpr (index + 1 < sizeof...(objects))
         {
-            Deserialize<index + 1>(j, names, std::forward<O>(objects)...);
+            Deserialize<index + 1>(j, names, error, std::forward<O>(objects)...);
         }
     }
 

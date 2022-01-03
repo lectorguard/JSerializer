@@ -77,22 +77,39 @@ private:
         {
             JSER_ADD_ITEMS(string);
         }
+
+        virtual ~Inner() {};
+
     private:
         std::string string = "I am in a class ";
     } n;
     std::map<std::string, int> m = { {"CPU", 10}, { "GPU", 15 }, { "RAM", 20 }, };
     std::set<char> charSet = { 'H','e', 'l','o' };
-    int8_t* myInt; 
+    int8_t* myInt = nullptr; 
 };
 
 
 int main()
 {
     Outer outer;
-    std::cout << outer.SerializeObjectString() << std::endl;
+    JSerError error;
+    if (std::optional<std::string> result = outer.SerializeObjectString(error))
+    {
+        std::cout << *result << std::endl;
+    }
+    else
+    {
+        std::cout << (int)error << std::endl;
+    }
+    outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"toilette":78,"m":{"CPU":10,"GPU":15,"RAM":99},"n":{"string":"I like goint to bed every day "}})", error);
+    std::cout << (int)error << std::endl;
+
+
     // {"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}}
-    outer.DeserializeObject(R"({"*myInt":11,"charSet":[72,101,109,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}})");
-    std::cout << outer.SerializeObjectString() << std::endl;
+    
+    
+    std::cout << *outer.SerializeObjectString(error) << std::endl;
+
     // {"charSet":[1,11,77,121],"m":{"CPU":109,"GPU":109,"RAM":109},"n":{"string":"I am happy "}}
     return 0;
 }
