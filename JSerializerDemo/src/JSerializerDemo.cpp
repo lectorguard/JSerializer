@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <list>
 #include <set>
 #include "JSerializer.h"
 
@@ -83,32 +84,45 @@ private:
     private:
         std::string string = "I am in a class ";
     } n;
+
     std::map<std::string, int> m = { {"CPU", 10}, { "GPU", 15 }, { "RAM", 20 }, };
     std::set<char> charSet = { 'H','e', 'l','o' };
     int8_t* myInt = nullptr; 
 };
 
 
+
+template<class T>
+concept JSerCompatible = std::is_same_v<typename T::value_type, JSerError>;
+
+template<JSerCompatible T>
+void PushErrors(std::back_insert_iterator<T>&& errors)
+{
+    errors = JSerError::JSON_ERROR;     // 1
+    errors = JSerError::MEMBER_ERROR;   // 3
+}
+
+
 int main()
 {
+
     Outer outer;
-    JSerError error;
-    if (std::optional<std::string> result = outer.SerializeObjectString(error))
-    {
-        std::cout << *result << std::endl;
-    }
-    else
-    {
+    std::list<JSerError> errorList;
+    
+    std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
+    for (JSerError error : errorList)
         std::cout << (int)error << std::endl;
-    }
-    outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"toilette":78,"m":{"CPU":10,"GPU":15,"RAM":99},"n":{"string":"I like goint to bed every day "}})", error);
-    std::cout << (int)error << std::endl;
-
-
+    errorList.clear();
+    
+    outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"toilette":78,"m":{"CPU":10,"GPU":15,"RAM":99},"n":{"string":"I like goint to bed every day "}})", std::back_inserter(errorList));
+    for(JSerError error : errorList)
+        std::cout << (int)error << std::endl;
+    errorList.clear();
+    
     // {"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}}
     
     
-    std::cout << *outer.SerializeObjectString(error) << std::endl;
+    std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
 
     // {"charSet":[1,11,77,121],"m":{"CPU":109,"GPU":109,"RAM":109},"n":{"string":"I am happy "}}
     return 0;

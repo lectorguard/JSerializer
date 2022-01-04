@@ -60,22 +60,65 @@ enum class JSerError
 
 };
 
+template<class T>
+concept JSerErrorCompatible = std::is_same_v<typename T::value_type, JSerError>;
+
 struct SerializeItem
 {
     std::vector<std::string> ParameterNames = {};
-    std::function<void(nlohmann::json&, std::vector<std::string>&, JSerError&)> SerializeCB = nullptr;
-    std::function<void(nlohmann::json&, std::vector<std::string>&, JSerError&)> DeserializeCB = nullptr;
+    std::function<void(nlohmann::json&, std::vector<std::string>&, std::function<void(JSerError)>&)> SerializeCB = nullptr;
+    std::function<void(nlohmann::json&, std::vector<std::string>&, std::function<void(JSerError)>&)> DeserializeCB = nullptr;
 };
 
 struct JSerializable {
 
     virtual ~JSerializable() {};
 
-    std::optional<std::string> SerializeObjectString(JSerError& error);
-    std::optional<nlohmann::json> SerializeObjectJson(JSerError& error);
-    void DeserializeObject(nlohmann::json j, JSerError& error);
-    void DeserializeObject(const char* json, JSerError& error);
-    void DeserializeObject(std::string json,JSerError& error);
+    template<JSerErrorCompatible T>
+    std::string SerializeObjectString(std::back_insert_iterator<T> error)
+    {
+        nlohmann::json j = SerializeObjectJson(error);
+        return j.dump(-1, (char)32, false, nlohmann::detail::error_handler_t::ignore);
+    }
+
+    template<JSerErrorCompatible T>
+    nlohmann::json SerializeObjectJson(std::back_insert_iterator<T> error)
+    {
+        std::function<void(JSerError)> pushError = [&error](JSerError newError) { error = newError; };
+        return SerializeObject_Internal(pushError);
+    }
+
+    template<JSerErrorCompatible T>
+    void DeserializeObject(nlohmann::json j, std::back_insert_iterator<T> error)
+    {
+        std::function<void(JSerError)> pushError = [&error](JSerError newError) { error = newError; };
+        DeserializeObject_Internal(j, pushError);
+    }
+    
+    template<JSerErrorCompatible T>
+    void DeserializeObject(const char* json, std::back_insert_iterator<T> error)
+    {
+        nlohmann::json j = nlohmann::json::parse(json, nullptr, false);
+        if (j.is_discarded())
+        {
+            error = JSerError::JSON_ERROR;
+            return;
+        }
+        DeserializeObject(j, error);
+    }
+
+    template<JSerErrorCompatible T>
+    void DeserializeObject(std::string json, std::back_insert_iterator<T> error)
+    {
+        nlohmann::json j = nlohmann::json::parse(json, nullptr, false);
+        if (j.is_discarded())
+        {
+            error = JSerError::JSON_ERROR;
+            return;
+        }
+        DeserializeObject(j, error);
+    }
+
     void AddValidation(std::function<void()> validationFunction);
 
     template<typename...O>
@@ -85,53 +128,85 @@ struct JSerializable {
 
         SerializeChunks.push_back({
             names,
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, std::vector<std::string> parameterNames, JSerError& error)
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, std::vector<std::string> parameterNames, std::function<void(JSerError)>& pushError)
             {
-                std::apply([&parameterNames,&j, &error](auto &&... args)
+                std::apply([&parameterNames,&j, &pushError](auto &&... args)
                     {
-                        Serialize(j, parameterNames, error, args...);
+                        Serialize(j, parameterNames, pushError, args...);
                     }, tup);
             },
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json j, std::vector<std::string> parameterNames, JSerError& error) mutable
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json j, std::vector<std::string> parameterNames, std::function<void(JSerError)>& pushError) mutable
             {
-                std::apply([&parameterNames, &j, &error](auto &&... args)
+                std::apply([&parameterNames, &j, &pushError](auto &&... args)
                     {
-                        Deserialize(j, parameterNames, error, args...);
+                        Deserialize(j, parameterNames, pushError, args...);
                     }, tup);
             }
             });
     };
 
 private:
+    constexpr void executeValidation()
+    {
+        for (std::function<void()>& func : Validation)
+        {
+            func();
+        }
+    }
+
+    nlohmann::json SerializeObject_Internal(std::function<void(JSerError)>& pushError)
+    {
+        executeValidation();
+        if (SerializeChunks.size() == 0)
+        {
+            pushError(JSerError::SETUP_MISSING_ERROR);
+        }
+        nlohmann::json j;
+        for (SerializeItem& item : SerializeChunks)
+        {
+            item.SerializeCB(j, item.ParameterNames, pushError);
+        }
+        return j;
+    }
+
+    void DeserializeObject_Internal(nlohmann::json j, std::function<void(JSerError)>& pushError)
+    {
+        if (SerializeChunks.size() == 0)
+        {
+            pushError(JSerError::SETUP_MISSING_ERROR);
+        }
+        for (SerializeItem& item : SerializeChunks)
+        {
+            item.DeserializeCB(j, item.ParameterNames, pushError);
+        }
+        executeValidation();
+    }
+
     template <int I, class... Ts>
     constexpr static decltype(auto) get(Ts&&... ts) {
         return std::get<I>(std::forward_as_tuple(ts...));
     }
 
     template<size_t index = 0, typename...O>
-    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, JSerError& error, O&& ... objects)
+    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
 
         using CurrentType = std::remove_reference<decltype(elem)>::type;
-        static_assert(!std::is_pointer<CurrentType>::value, "Serialization does not support pointer types");
+        static_assert(!std::is_pointer_v<CurrentType>, "Serialization does not support pointer types");
         
         if constexpr (std::is_polymorphic_v<CurrentType>) 
         {
             if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
             {
-                if (std::optional<nlohmann::json> subj = serializable->SerializeObjectJson(error))
+                if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
                 {
                     j[names[index]] = *subj;
                 }
                 else return;
             }
             // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-            else
-            {
-                error = JSerError::POLYMORPHIC_ERROR;
-                return;
-            }
+            else pushError(JSerError::POLYMORPHIC_ERROR);
         }
         else
         {
@@ -140,48 +215,43 @@ private:
         
 
         if constexpr (index + 1 < sizeof...(objects)) {
-            Serialize<index + 1>(j, names, error, std::forward<O>(objects)...);
+            Serialize<index + 1>(j, names, pushError, std::forward<O>(objects)...);
         }
     }
 
     template<size_t index = 0, typename...O>
-    static void Deserialize(nlohmann::json j, const std::vector<std::string> names, JSerError& error, O&& ... objects)
+    static void Deserialize(nlohmann::json j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
 
         if (!j.contains(names[index]))
         {
-            error = JSerError::MEMBER_ERROR;
-            return;
-        }
-
-        using CurrentType = std::remove_reference<decltype(elem)>::type;
-
-        if constexpr (std::is_polymorphic_v<CurrentType>)
-        {
-            if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
-            {
-                serializable->DeserializeObject(j[names[index]], error);
-            }
-            // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-            else 
-            {
-                error = JSerError::POLYMORPHIC_ERROR;
-                return;
-            }
+            pushError(JSerError::MEMBER_ERROR);
         }
         else
         {
-            elem = j[names[index]].get<CurrentType>();
+            using CurrentType = std::remove_reference<decltype(elem)>::type;
+
+            if constexpr (std::is_polymorphic_v<CurrentType>)
+            {
+                if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
+                {
+                    serializable->DeserializeObject_Internal(j[names[index]], pushError);
+                }
+                // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
+                else pushError(JSerError::POLYMORPHIC_ERROR);
+            }
+            else
+            {
+                elem = j[names[index]].get<CurrentType>();
+            }
         }
-        
+
         if constexpr (index + 1 < sizeof...(objects))
         {
-            Deserialize<index + 1>(j, names, error, std::forward<O>(objects)...);
+            Deserialize<index + 1>(j, names, pushError, std::forward<O>(objects)...);
         }
     }
-
-    constexpr void executeValidation();
 
     std::vector<SerializeItem> SerializeChunks = {};
     std::vector<std::function<void()>> Validation = {};

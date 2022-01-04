@@ -4,7 +4,7 @@ Simple to use json serializer for c++
 
 ## TODO
 
-- Error Handling
+- Error Handling DONE
 - Allow custom serialization logic
 - Deal with Pointer
 
