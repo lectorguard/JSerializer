@@ -93,13 +93,13 @@ private:
 
 
 template<class T>
-concept JSerCompatible = std::is_same_v<typename T::value_type, JSerError>;
+concept JSerCompatible = std::is_same_v<typename T::value_type, JSerErrorTypes>;
 
 template<JSerCompatible T>
 void PushErrors(std::back_insert_iterator<T>&& errors)
 {
-    errors = JSerError::JSON_ERROR;     // 1
-    errors = JSerError::MEMBER_ERROR;   // 3
+    errors = JSerErrorTypes::JSON_ERROR;     // 1
+    errors = JSerErrorTypes::MEMBER_ERROR;   // 3
 }
 
 
@@ -111,12 +111,12 @@ int main()
     
     std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
     for (JSerError error : errorList)
-        std::cout << (int)error << std::endl;
+        std::cout << (int)error.Error << "  msg : " << error.Message  << std::endl;
     errorList.clear();
     
-    outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"toilette":78,"m":{"CPU":10,"GPU":15,"RAM":99},"n":{"string":"I like goint to bed every day "}})", std::back_inserter(errorList));
+    outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"NOOOOOO"}})", std::back_inserter(errorList));
     for(JSerError error : errorList)
-        std::cout << (int)error << std::endl;
+        std::cout << (int)error.Error << "  msg : " << error.Message << std::endl;
     errorList.clear();
     
     // {"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}}

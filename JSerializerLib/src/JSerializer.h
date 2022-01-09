@@ -50,7 +50,7 @@
 #define JSER_ADD_VAL(x) AddValidation([this]()x)
 
 
-enum class JSerError
+enum class JSerErrorTypes
 {
     NO_ERROR,               // OK
     JSON_ERROR,             // Error inside the json library
@@ -58,6 +58,13 @@ enum class JSerError
     MEMBER_ERROR,           // Failed deserializing member variable
     POLYMORPHIC_ERROR,      // Object is polymorphic but it does not inherit from JSerializable
 
+};
+
+
+struct JSerError
+{
+    const JSerErrorTypes Error = JSerErrorTypes::NO_ERROR;
+    const std::string Message = "";
 };
 
 template<class T>
@@ -72,7 +79,7 @@ struct SerializeItem
 
 struct JSerializable {
 
-    virtual ~JSerializable() {};
+    virtual ~JSerializable() = default;
 
     template<JSerErrorCompatible T>
     std::string SerializeObjectString(std::back_insert_iterator<T> error)
@@ -98,13 +105,7 @@ struct JSerializable {
     template<JSerErrorCompatible T>
     void DeserializeObject(const char* json, std::back_insert_iterator<T> error)
     {
-        nlohmann::json j = nlohmann::json::parse(json, nullptr, false);
-        if (j.is_discarded())
-        {
-            error = JSerError::JSON_ERROR;
-            return;
-        }
-        DeserializeObject(j, error);
+        DeserializeObject(std::string(json), error);
     }
 
     template<JSerErrorCompatible T>
@@ -113,7 +114,7 @@ struct JSerializable {
         nlohmann::json j = nlohmann::json::parse(json, nullptr, false);
         if (j.is_discarded())
         {
-            error = JSerError::JSON_ERROR;
+            error = { JSerErrorTypes::JSON_ERROR, "The following json " + json + " could not be parsed and got discarded" };
             return;
         }
         DeserializeObject(j, error);
@@ -124,7 +125,7 @@ struct JSerializable {
     template<typename...O>
     constexpr void AddSerializeItems(const std::vector<std::string> names, O&& ... objects)
     {
-        assert(names.size() == sizeof...(objects) && "for each name there must be a parameter");
+        assert(names.size() == sizeof...(objects) && " for each name there must be a parameter");
 
         SerializeChunks.push_back({
             names,
@@ -159,7 +160,7 @@ private:
         executeValidation();
         if (SerializeChunks.size() == 0)
         {
-            pushError(JSerError::SETUP_MISSING_ERROR);
+            pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) inside the constructor of " + std::string(typeid(*this).name())+ ", before calling SerializeObject. "});
         }
         nlohmann::json j;
         for (SerializeItem& item : SerializeChunks)
@@ -173,7 +174,7 @@ private:
     {
         if (SerializeChunks.size() == 0)
         {
-            pushError(JSerError::SETUP_MISSING_ERROR);
+            pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) inside the constructor of " + std::string(typeid(*this).name()) + ", before calling DeserializeObject."});
         }
         for (SerializeItem& item : SerializeChunks)
         {
@@ -206,7 +207,7 @@ private:
                 else return;
             }
             // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-            else pushError(JSerError::POLYMORPHIC_ERROR);
+            else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(CurrentType).name()) + " must inherit from JSerializable in order to be Serializable. "});
         }
         else
         {
@@ -224,14 +225,14 @@ private:
     {
         auto& elem = get<index>(objects...);
 
+        using CurrentType = std::remove_reference<decltype(elem)>::type;
+
         if (!j.contains(names[index]))
         {
-            pushError(JSerError::MEMBER_ERROR);
+            pushError({ JSerErrorTypes::MEMBER_ERROR, "Json file is missing member --> " + names[index] + " <-- of type " + std::string(typeid(elem).name()) + ". Field can not be deserialized."});
         }
         else
         {
-            using CurrentType = std::remove_reference<decltype(elem)>::type;
-
             if constexpr (std::is_polymorphic_v<CurrentType>)
             {
                 if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
@@ -239,7 +240,7 @@ private:
                     serializable->DeserializeObject_Internal(j[names[index]], pushError);
                 }
                 // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-                else pushError(JSerError::POLYMORPHIC_ERROR);
+                else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(CurrentType).name()) + " must inherit from JSerializable in order to be Serializable. " });
             }
             else
             {
