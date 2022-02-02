@@ -21,7 +21,7 @@ struct Foo : public JSerializable
 {
     Foo()
     {
-        JSER_ADD_ITEMS(number, testEnum);
+        JSER_ADD(number, testEnum);
         JSER_ADD_VAL(
             {
                 assert(number < INT32_MAX);
@@ -37,8 +37,8 @@ private:
 struct Poo : public JSerializable
 {
     Poo() {
-        JSER_ADD_ITEMS(isTrue);
-        JSER_ADD_ITEMS(vector);
+        JSER_ADD(isTrue);
+        JSER_ADD(vector);
         JSER_ADD_VAL(
             {
                 assert(vector.size() > 0);
@@ -54,7 +54,7 @@ private:
 
 struct Inherit : public Poo
 {
-    Inherit() { JSER_ADD_ITEMS(pc, foo); }
+    Inherit() { JSER_ADD(pc, foo); }
     
 private:
     std::map<std::string, int> pc = { {"CPU", 10}, { "GPU", 15 }, { "RAM", 20 }, };
@@ -63,24 +63,27 @@ private:
 };
 
 struct Outer : public JSerializable {
-
     Outer()
     {
         myInt = new int8_t(7);
-        JSER_ADD_ITEMS(m, charSet, n, *myInt);
+        JSER_ADD(m, charSet, n, *myInt);
     }
-
-private:
 
     struct Inner : public JSerializable
     {
         Inner()
         {
-            JSER_ADD_ITEMS(string);
+            JSER_ADD_CUSTOM(
+                [this](nlohmann::json& j, std::function<void(JSerError)>& pushError) {
+                    j["string"] = string; 
+                }, 
+                [this](nlohmann::json& j, std::function<void(JSerError)>& pushError) {
+                    if (j.contains("string"))
+                        string = j["string"];
+                    else
+                        pushError({JSerErrorTypes::JSON_ERROR, "Key string does not exist in json"});
+                });
         }
-
-        virtual ~Inner() {};
-
     private:
         std::string string = "I am in a class ";
     } n;
@@ -90,22 +93,8 @@ private:
     int8_t* myInt = nullptr; 
 };
 
-
-
-template<class T>
-concept JSerCompatible = std::is_same_v<typename T::value_type, JSerErrorTypes>;
-
-template<JSerCompatible T>
-void PushErrors(std::back_insert_iterator<T>&& errors)
-{
-    errors = JSerErrorTypes::JSON_ERROR;     // 1
-    errors = JSerErrorTypes::MEMBER_ERROR;   // 3
-}
-
-
 int main()
 {
-
     Outer outer;
     std::list<JSerError> errorList;
     
@@ -118,13 +107,8 @@ int main()
     for(JSerError error : errorList)
         std::cout << (int)error.Error << "  msg : " << error.Message << std::endl;
     errorList.clear();
-    
-    // {"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"I am in a class "}}
-    
-    
-    std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
 
-    // {"charSet":[1,11,77,121],"m":{"CPU":109,"GPU":109,"RAM":109},"n":{"string":"I am happy "}}
+    std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
     return 0;
 }
 
