@@ -130,7 +130,10 @@ struct JSerializable {
         DeserializeObject(j, error);
     }
 
-    void AddValidation(std::function<void()> validationFunction);
+    void AddValidation(std::function<void()> validationFunction)
+    {
+        Validation.push_back(validationFunction);
+    }
 
     template<typename...O>
     constexpr void AddDefaultSerializeItem(const std::vector<std::string> names, O&& ... objects)
