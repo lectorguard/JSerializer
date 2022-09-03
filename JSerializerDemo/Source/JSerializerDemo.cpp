@@ -6,6 +6,8 @@
 #include <list>
 #include <set>
 #include "JSerializer.h"
+#define BOOST_UT_DISABLE_MODULE // After updgrading to VS 2022 we can use modules
+#include "boost/ut.hpp"
 
 
 enum class TestEnum
@@ -95,21 +97,32 @@ struct Outer : public JSerializable {
 
 int main()
 {
-    Outer outer;
-    std::list<JSerError> errorList;
-    
-    std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
-    for (JSerError error : errorList)
-        std::cout << (int)error.Error << "  msg : " << error.Message  << std::endl;
-    errorList.clear();
-    
-    outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"NOOOOOO"}})", std::back_inserter(errorList));
-    for(JSerError error : errorList)
-        std::cout << (int)error.Error << "  msg : " << error.Message << std::endl;
-    errorList.clear();
 
-    std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
-    return 0;
+    //return 0;
+    //using namespace  boost::ut;
+    // 
+    //"simple"_test = [] {
+    //    Foo* foo = new Foo();
+    //    boost::ut::expect(dynamic_cast<JSerializable*>(foo) == nullptr);
+    //    delete foo;
+    //};
+    //
+    //
+    //Outer outer;
+    //std::list<JSerError> errorList;
+    //
+    //std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
+    //for (JSerError error : errorList)
+    //    std::cout << (int)error.Error << "  msg : " << error.Message  << std::endl;
+    //errorList.clear();
+    //
+    //outer.DeserializeObject(R"({"*myInt":7,"charSet":[72,101,108,111],"m":{"CPU":10,"GPU":15,"RAM":20},"n":{"string":"NOOOOOO"}})", std::back_inserter(errorList));
+    //for(JSerError error : errorList)
+    //    std::cout << (int)error.Error << "  msg : " << error.Message << std::endl;
+    //errorList.clear();
+    //
+    //std::cout << outer.SerializeObjectString(std::back_inserter(errorList)) << std::endl;
+    //return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
