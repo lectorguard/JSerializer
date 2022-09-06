@@ -55,7 +55,7 @@ enum class JSerErrorTypes
 {
     NO_ERROR,               // OK
     JSON_ERROR,             // Error inside the json library
-    SETUP_MISSING_ERROR,    // You must call SetUpSerialization before you can call DeserializeObject
+    SETUP_MISSING_ERROR,    // You must call JSER_ADD_... before you can call DeserializeObject
     MEMBER_ERROR,           // Failed deserializing member variable
     POLYMORPHIC_ERROR,      // Object is polymorphic but it does not inherit from JSerializable
 
@@ -130,6 +130,7 @@ struct JSerializable {
         DeserializeObject(j, error);
     }
 
+    // After Deserialization is finished, validation function is automatically called
     void AddValidation(std::function<void()> validationFunction)
     {
         Validation.push_back(validationFunction);
@@ -239,6 +240,9 @@ private:
         }
         else
         {
+            // In case of compile error here 
+            // The element you want to serialize is not json convertible.
+            // Maybe you forgot to inherit from JSerializable, otherwise you can write a custom serializer for elem
             j[names[index]] = elem;
         }
         

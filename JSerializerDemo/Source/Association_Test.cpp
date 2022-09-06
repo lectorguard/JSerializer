@@ -76,7 +76,7 @@ namespace Association_Test
     boost::ut::suite Association_Test = [] {
         using namespace boost::ut;
 
-        "object association test"_test = [] {
+        "object association"_test = [] {
             Foo4 foo;
             std::list<JSerError> errorList;
             std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
