@@ -26,7 +26,7 @@ namespace Collections_Test
         std::deque<unsigned int> foo_deque = { 17, 26, 45, 78 };
         std::forward_list<bool> foo_forward_list = { true, false, true, false };
         std::list<float> foo_list = { 50.15f, 4848.52f };
-        //std::stack<double> foo_stack; // TO DO 
+        std::stack<double> foo_stack; // TO DO 
         //std::queue<float> foo_queue; // TO DO
         //std::priority_queue<wchar_t> foo_priority_queue; // TO DO
         std::set<bool> foo_set = { true, false , false };
@@ -53,7 +53,7 @@ namespace Collections_Test
             //foo_priority_queue.push('L');
             //foo_priority_queue.push('W');
 
-            JSER_ADD(foo_array, foo_vector, foo_deque, foo_forward_list, foo_list, foo_set);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
+            JSER_ADD(foo_array, foo_vector, foo_deque, foo_forward_list, foo_list, foo_set ,foo_stack);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
             JSER_ADD(foo_multiset, foo_map, foo_unordered_map, foo_unordered_set, foo_unordered_multiset, foo_tuple, foo_valarray);// , foo_multimap);// , foo_unordered_set, foo_unordered_multiset, foo_unordered_multimap, foo_tuple);
         };
 
@@ -64,7 +64,7 @@ namespace Collections_Test
             expect(foo_vector == Rhs.foo_vector);
             expect(foo_forward_list == Rhs.foo_forward_list);
             expect(foo_list == Rhs.foo_list);
-            //expect(foo_stack == Rhs.foo_stack);
+            expect(foo_stack == Rhs.foo_stack);
             //expect(foo_queue == Rhs.foo_queue);
             
             //std::priority_queue<wchar_t> priority_queue_copy = Rhs.foo_priority_queue;

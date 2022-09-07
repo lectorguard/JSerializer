@@ -19,6 +19,8 @@ Simple to use json serializer for c++
     - multimap
     - unordered multimap 
     - bitset
+- Create namespace around the library
+- Write docs inside this readme 
 
 ## Usage
 
