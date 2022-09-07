@@ -8,6 +8,12 @@
 #include <functional>
 #include <optional>
 #include "nlohmann/json.hpp"
+#include "BaseSerializeType.h"
+#include <queue>
+#include <map>
+#include <bitset>
+#include <stack>
+#include "variant"
 
 #define EXPAND( x ) x
 #define F(x, ...) X = x and VA_ARGS = __VA_ARGS__
@@ -59,6 +65,19 @@ enum class JSerErrorTypes
     MEMBER_ERROR,           // Failed deserializing member variable
     POLYMORPHIC_ERROR,      // Object is polymorphic but it does not inherit from JSerializable
 
+};
+
+enum class JSupTypes : uint8_t
+{
+    NO_CUSTOMIZED_SERIALIZATION,
+    STACK,
+    QUEUE,
+    PRIORITY_QUEUE,
+    MULTIMAP,
+    UNORDERED_MULTIMAP,
+    BITSET,
+    POLYMORPHIC,
+    POINTER
 };
 
 
@@ -150,7 +169,7 @@ struct JSerializable {
                         Serialize(j, parameterNames, pushError, args...);
                     }, tup);
             },
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json j, std::vector<std::string> parameterNames, std::function<void(JSerError)>& pushError) mutable
+            [tup = std::forward_as_tuple(objects...),this](nlohmann::json j, std::vector<std::string> parameterNames, std::function<void(JSerError)>& pushError) mutable
             {
                 std::apply([&parameterNames, &j, &pushError](auto &&... args)
                     {
@@ -223,6 +242,7 @@ private:
         auto& elem = get<index>(objects...);
 
         using CurrentType = std::remove_reference<decltype(elem)>::type;
+        
         static_assert(!std::is_pointer_v<CurrentType>, "Serialization does not support pointer types");
         
         if constexpr (std::is_polymorphic_v<CurrentType>) 
@@ -253,7 +273,7 @@ private:
     }
 
     template<size_t index = 0, typename...O>
-    static void Deserialize(nlohmann::json j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
+    static void Deserialize(const nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
 
@@ -265,6 +285,12 @@ private:
         }
         else
         {
+            const JSupTypes SerializationType = GetSerializationType(elem);
+            if (SerializationType != JSupTypes::NO_CUSTOMIZED_SERIALIZATION)
+            {
+                std::visit([&elem, name = names[index], &j](const auto& x) { x.Deserialize(j, name, elem); }, SerializationBehavior[SerializationType]);
+            }
+
             if constexpr (std::is_polymorphic_v<CurrentType>)
             {
                 if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
@@ -286,6 +312,59 @@ private:
         }
     }
 
+	template<typename Test, template<typename...> class Ref>
+	struct is_specialization : std::false_type {};
+
+	template<template<typename...> class Ref, typename... Args>
+	struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
+
+	template<typename T>
+	struct is_bitset : std::false_type {};
+
+	template<std::size_t N>
+	struct is_bitset<std::bitset<N>> : std::true_type {};
+
+	template<typename Type>
+	static constexpr JSupTypes GetSerializationType(Type elem)
+	{
+        using CurrentType = std::remove_reference<decltype(elem)>::type;
+
+        if constexpr (is_specialization<CurrentType, std::stack>::value) return JSupTypes::STACK;
+        else if constexpr (is_specialization<CurrentType, std::queue>::value) return JSupTypes::QUEUE;
+        //else if constexpr (is_specialization<CurrentType, std::priority_queue>::value) return JSupTypes::PRIORITY_QUEUE;
+        //else if constexpr (is_specialization<CurrentType, std::multimap>::value) return JSupTypes::MULTIMAP;
+        //else if constexpr (is_specialization<CurrentType, std::unordered_multimap>::value) return JSupTypes::UNORDERED_MULTIMAP;
+        //else if constexpr (is_bitset<CurrentType>::value) return JSupTypes::BITSET;
+        //else if constexpr (std::is_polymorphic_v<CurrentType>) return JSupTypes::POLYMORPHIC;
+        //else if constexpr (std::is_pointer_v<CurrentType>) 
+        //{
+        //    static_assert(false, "No pointer supported");
+        //    return JSupTypes::POINTER;
+        //}
+          
+		return JSupTypes::NO_CUSTOMIZED_SERIALIZATION;
+	}
+
+    using SerializerType = std::variant<StackSerializer, QueueSerializer>;// ,
+        //PriorityQueueSerializer>;
+		//MultimapSerializer,
+		//UnorderedMultimapSerializer,
+		//BitsetSerializer,
+		//BitsetSerializer,
+		//PolymorphicSerializer,
+		//PointerSerializer>;
+
+    inline static std::map<JSupTypes, SerializerType> SerializationBehavior = std::map<JSupTypes,SerializerType>
+    {
+        {JSupTypes::STACK, StackSerializer()},
+        {JSupTypes::QUEUE, QueueSerializer()},
+        //{JSupTypes::PRIORITY_QUEUE, PriorityQueueSerializer()},
+        //{JSupTypes::MULTIMAP, MultimapSerializer()},
+        //{JSupTypes::UNORDERED_MULTIMAP, UnorderedMultimapSerializer()},
+        //{JSupTypes::BITSET, BitsetSerializer()},
+        //{JSupTypes::POLYMORPHIC, PolymorphicSerializer()},
+        //{JSupTypes::POINTER, PointerSerializer()},
+    };
     std::vector<CustomSerializeItem> CustomSerializeChunks = {};
     std::vector<DefaultSerializeItem> DefaultSerializeChunks = {};
     std::vector<std::function<void()>> Validation = {};
