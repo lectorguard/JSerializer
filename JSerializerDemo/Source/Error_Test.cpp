@@ -2,9 +2,18 @@
 #include "boost/ut.hpp"
 #include "JSerializer.h"
 #include <iostream>
+#include <queue>
+#include <map>
 
 namespace Error_Test
 {
+
+	template<typename Test, template<typename...> class Ref>
+	struct is_specialization_v : std::false_type {};
+
+	template<template<typename...> class Ref, typename... Args>
+	struct is_specialization_v<Ref<Args...>, Ref> : std::true_type {};
+	
 	boost::ut::suite Error_Test = [] 
 	{
 		using namespace boost::ut;
@@ -150,7 +159,33 @@ namespace Error_Test
 					expect(errorList.front().Error == JSerErrorTypes::POLYMORPHIC_ERROR);
 				};
 			};
+
+
+			when("you want to deserialize a stack ") = []()
+			{
+				//std::vector<std::priority_queue<int>> help;
+				//std::cout << "Value types " << is_specialization_v<decltype(help), std::vector>() << std::endl;
+
+
+
+				//std::priority_queue<float> foo_prio_queue;
+				//float kartoffel = 12.5f;
+				//std::map<int, int> hello;
+				//test t;
+
+				//std::cout << "Value types " << is_single_value_type<decltype(foo_prio_queue)>() << std::endl;
+				//std::queue<float> foo_queue;
+				//foo_queue.push(14.0f);
+				//foo_queue.push(4.0f);
+				//foo_queue.push(124.0f);
+				//foo_queue.push(124.0f);
+				//foo_queue.push(154.0f);
+				//
+				//foo_queue.
+
+			};
 		};
 	};
 }
+
 

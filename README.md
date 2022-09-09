@@ -19,6 +19,8 @@ Simple to use json serializer for c++
     - multimap
     - unordered multimap 
     - bitset
+    - Any container could be filled with polymorph objects
+    - test map of array of something else of ....
 - Create namespace around the library
 - Write docs inside this readme 
 

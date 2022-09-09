@@ -12,6 +12,7 @@
 #include "Utils/Utils.h"
 #include "Serializer/SerializationManager.h"
 
+
 struct JSerializable {
 
     using CustomCB = std::function<void(nlohmann::json&, std::function<void(JSerError)>&)>;
@@ -144,57 +145,11 @@ private:
         return std::get<I>(std::forward_as_tuple(ts...));
     }
 
-
-	template<typename Test, template<typename...> class Ref>
-	struct is_specialization_v : std::false_type {};
-
-	template<template<typename...> class Ref, typename... Args>
-	struct is_specialization_v<Ref<Args...>, Ref> : std::true_type {};
-
-	template<typename T>
-	struct is_bitset_v : std::false_type {};
-
-	template<std::size_t N>
-	struct is_bitset_v<std::bitset<N>> : std::true_type {};
-
     template<size_t index = 0, typename...O>
     static void Serialize(nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
-
-        using CurrentType = std::remove_reference<decltype(elem)>::type;
-
-        static_assert(!std::is_pointer_v<CurrentType>, "Serialization does not support pointer types");
-        
-        if constexpr (std::is_polymorphic_v<CurrentType>) 
-        {
-            if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
-            {
-                if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
-                {
-                    j[names[index]] = *subj;
-                }
-                else return;
-            }
-            // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-            else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(CurrentType).name()) + " must inherit from JSerializable in order to be Serializable. "});
-        }
-        else
-        {
-			constexpr JSupTypes SerializationType = SerManager.GetSerializationType<CurrentType>();
-			if constexpr (SerializationType == JSupTypes::NO_CUSTOMIZED_SERIALIZATION)
-            {
-                // In case of compile error here 
-                // The element you want to serialize is not json convertible.
-                // Maybe you forgot to inherit from JSerializable, otherwise you can write a custom serializer for elem
-                j[names[index]] = elem;
-            }
-            else
-            {
-                SerManager.SerializeByJSER(SerializationType, j, names[index], elem, pushError);
-            }
-        }
-        
+        j[names[index]] = DefaultSerialize(elem, pushError);
 
         if constexpr (index + 1 < sizeof...(objects)) {
             Serialize<index + 1>(j, names, pushError, std::forward<O>(objects)...);
@@ -204,37 +159,15 @@ private:
     template<size_t index = 0, typename...O>
     static void Deserialize(const nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
-        auto& elem = get<index>(objects...);
-
-        using CurrentType = std::remove_reference<decltype(elem)>::type;
-
         if (!j.contains(names[index]))
         {
             pushError({ JSerErrorTypes::MEMBER_ERROR, "Json file is missing member --> " + names[index] + " <-- of type " + std::string(typeid(elem).name()) + ". Field can not be deserialized."});
         }
         else
         {
-            if constexpr (std::is_polymorphic_v<CurrentType>)
-            {
-                if (JSerializable* serializable = dynamic_cast<JSerializable*>(&elem)) // not constexpr
-                {
-                    serializable->DeserializeObject_Internal(j[names[index]], pushError);
-                }
-                // does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
-                else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(CurrentType).name()) + " must inherit from JSerializable in order to be Serializable. " });
-            }
-            else
-            {
-                constexpr JSupTypes SerializationType = SerManager.GetSerializationType<CurrentType>();
-                if constexpr (SerializationType == JSupTypes::NO_CUSTOMIZED_SERIALIZATION)
-				{
-                    elem = j[names[index]].get<CurrentType>(); 
-				}
-                else
-                {
-                    SerManager.DeserializeByJSER(SerializationType, j, names[index], elem, pushError);
-                }
-            }
+            auto& elem = get<index>(objects...);
+            using CurrentType = std::remove_reference<decltype(elem)>::type;
+            elem = DefaultDeserialize<CurrentType>(j[names[index]], pushError);
         }
 
         if constexpr (index + 1 < sizeof...(objects))
@@ -243,10 +176,9 @@ private:
         }
     }
 
-	
-
-    inline static SerializationManager SerManager;
     std::vector<CustomSerializeItem> CustomSerializeChunks = {};
     std::vector<DefaultSerializeItem> DefaultSerializeChunks = {};
     std::vector<std::function<void()>> Validation = {};
+
+    friend struct PolymorphicSerializer;
 };
