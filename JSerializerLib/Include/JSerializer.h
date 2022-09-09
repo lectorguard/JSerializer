@@ -159,14 +159,15 @@ private:
     template<size_t index = 0, typename...O>
     static void Deserialize(const nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
+		auto& elem = get<index>(objects...);
+		using CurrentType = std::remove_reference<decltype(elem)>::type;
+
         if (!j.contains(names[index]))
         {
             pushError({ JSerErrorTypes::MEMBER_ERROR, "Json file is missing member --> " + names[index] + " <-- of type " + std::string(typeid(elem).name()) + ". Field can not be deserialized."});
         }
         else
         {
-            auto& elem = get<index>(objects...);
-            using CurrentType = std::remove_reference<decltype(elem)>::type;
             elem = DefaultDeserialize<CurrentType>(j[names[index]], pushError);
         }
 

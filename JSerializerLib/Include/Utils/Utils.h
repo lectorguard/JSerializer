@@ -62,6 +62,12 @@ template<template<typename...> class Ref, typename... Args>
 struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
 
 template<typename T>
+struct is_std_array : std::false_type {};
+
+template<typename T, std::size_t N>
+struct is_std_array<std::array<T, N>> : std::true_type {};
+
+template<typename T>
 struct is_bitset : std::false_type {};
 
 template<std::size_t N>

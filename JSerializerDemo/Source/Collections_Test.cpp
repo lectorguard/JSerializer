@@ -27,7 +27,7 @@ namespace Collections_Test
 
     struct Foo : JSerializable
     {
-        std::array<std::string, 2> foo_array = { "hello", "world" };
+        //std::array<std::string, 2> foo_array = { "hello", "world" };
         std::vector<int> foo_vector = { 2, 3 };
         //std::deque<unsigned int> foo_deque = { 17, 26, 45, 78 };
         //std::forward_list<bool> foo_forward_list = { true, false, true, false };
@@ -59,14 +59,14 @@ namespace Collections_Test
             //foo_priority_queue.push('L');
             //foo_priority_queue.push('W');
 
-            JSER_ADD(foo_array, foo_vector, /*foo_deque, foo_forward_list,*/ foo_list, /*foo_set*/ /*,foo_stack, foo_queue*/);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
+            JSER_ADD(/*foo_array,*/ foo_vector /*,foo_deque, foo_forward_list,*/ ,foo_list /*foo_set*/ /*,foo_stack, foo_queue*/);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
            /* JSER_ADD(foo_multiset, foo_map, foo_unordered_map, foo_unordered_set, foo_unordered_multiset, foo_tuple, foo_valarray);*/// , foo_multimap);// , foo_unordered_set, foo_unordered_multiset, foo_unordered_multimap, foo_tuple);
         };
 
         void compare(const Foo& Rhs)
         {
             using namespace boost::ut;
-            expect(foo_array == Rhs.foo_array);
+            //expect(foo_array == Rhs.foo_array);
             expect(foo_vector == Rhs.foo_vector);
             /*expect(foo_forward_list == Rhs.foo_forward_list);*/
             expect(foo_list == Rhs.foo_list);
@@ -106,6 +106,9 @@ namespace Collections_Test
 
         "collections"_test = [] {
             Foo foo;
+            //foo.foo_array[1] = "schmuse";
+            foo.foo_list.push_back(5861.04f);
+            foo.foo_vector.pop_back();
             std::list<JSerError> errorList;
             std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
@@ -153,6 +156,42 @@ namespace Collections_Test
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
 
             expect(t2.foo == t.foo);
+        };
+
+        "check correct type detection"_test = []()
+        {
+			std::array<std::string, 2> foo_array = { "hello", "world" };
+			float my_arr[] = { 2.8f,5.4f,6.0f };
+            std::list<int> foo_list = { 45,48,513,8,61,86,156 };
+            std::vector<double> foo_vector = { 16561.4681,168.168,416811.68186,4648.864 };
+
+            struct test : JSerializable{};
+            struct test2 : test{};
+            struct test3{};
+
+            expect(is_std_array<decltype(foo_array)>());
+            expect(!is_std_array<decltype(my_arr)>());
+            expect(!is_std_array<decltype(foo_list)>());
+            expect(!is_std_array<decltype(foo_vector)>());
+
+
+            expect(is_specialization<decltype(foo_list), std::list>());
+            expect(!is_specialization<decltype(my_arr), std::list>());
+            expect(!is_specialization<decltype(foo_array), std::list>());
+            expect(!is_specialization<decltype(foo_vector), std::list>());
+
+			expect(is_specialization<decltype(foo_vector), std::vector>());
+			expect(!is_specialization<decltype(my_arr), std::vector>());
+			expect(!is_specialization<decltype(foo_array), std::vector>());
+			expect(!is_specialization<decltype(foo_list), std::vector>());
+
+            expect(std::is_polymorphic_v<test>);
+            expect(std::is_polymorphic_v<test2>);
+            expect(!std::is_polymorphic_v<test3>);
+            expect(!std::is_polymorphic_v<decltype(foo_array)>);
+            expect(!std::is_polymorphic_v<decltype(foo_list)>);
+            expect(!std::is_polymorphic_v<decltype(foo_vector)>);
+
         };
     };
 };

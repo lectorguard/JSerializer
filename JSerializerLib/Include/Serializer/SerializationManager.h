@@ -2,7 +2,7 @@
 
 #include "nlohmann/json.hpp"
 #include "Utils/Utils.h"
-#include "Serializer/VectorArrayListSerializer.h"
+#include "Serializer/ListVectorSerializer.h"
 #include "Serializer/PolymorphicSerializer.h"
 #include <string>
 #include <functional>
@@ -25,12 +25,12 @@
 
 
 using SerializerType = std::variant<
-	VectorArrayListSerializer, 
+	ListVectorSerializer, 
 	PolymorphicSerializer>;
 
 inline static constexpr const std::array<SerializerType,2> SerializationBehavior = 
 {
-	VectorArrayListSerializer(),
+	ListVectorSerializer(),
 	PolymorphicSerializer(),
 };
 
