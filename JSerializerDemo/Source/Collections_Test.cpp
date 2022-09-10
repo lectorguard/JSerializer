@@ -135,18 +135,30 @@ namespace Collections_Test
         //    foo.compare(deserialized);
         //};
 
-        "array"_test = []()
+        "simple iterable types "_test = []()
         {
             struct test : JSerializable
             {
-                test() { JSER_ADD(foo); }
+                test() { JSER_ADD(foo, foo_list, foo_vector ,foo_forward_list ,foo_set, foo_multi_set, foo_valarry); }
                 std::array<int, 3> foo = { 0,0,0 };
+                std::list<int> foo_list = { 45,48,513,8,61,86,156 };
+				std::vector<double> foo_vector = { 16561.4681,168.168,416811.68186,4648.864 };
+				std::forward_list<bool> foo_forward_list = { false,true, true, false };
+				std::set<int32_t> foo_set = { 5,4,5658,6 };
+				std::multiset<int32_t> foo_multi_set = { 185,165,65,16,81,65,65,65 };
+				std::valarray<int32_t> foo_valarry = { 11565,156,651,186,68658,616,1650 };            
             };
 
             test t;
             t.foo[0] = 4;
             t.foo[1] = 3;
             t.foo[2] = 24;
+            t.foo_list.push_back(156);
+            t.foo_vector.push_back(158551.15616);
+            t.foo_forward_list.push_front(false);
+            t.foo_set.insert(65);
+            t.foo_multi_set.emplace(4557);
+            t.foo_valarry[3] = 600;
             std::list<JSerError> errorList;
             std::string result = t.SerializeObjectString(std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
@@ -156,6 +168,13 @@ namespace Collections_Test
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
 
             expect(t2.foo == t.foo);
+            expect(t2.foo_list == t.foo_list);
+            expect(t2.foo_vector == t.foo_vector);
+            expect(t2.foo_forward_list == t.foo_forward_list);
+            expect(t2.foo_set == t.foo_set);
+            expect(t2.foo_multi_set == t.foo_multi_set);
+            expect(std::equal(std::begin(t2.foo_valarry), std::end(t2.foo_valarry), std::begin(t.foo_valarry)));
+
         };
 
         "check correct type detection"_test = []()
@@ -164,6 +183,11 @@ namespace Collections_Test
 			float my_arr[] = { 2.8f,5.4f,6.0f };
             std::list<int> foo_list = { 45,48,513,8,61,86,156 };
             std::vector<double> foo_vector = { 16561.4681,168.168,416811.68186,4648.864 };
+            std::forward_list<bool> foo_forward_list = { false,true, true, false };
+            std::set<int32_t> foo_set = { 5,4,5658,6 };
+            std::multiset<int32_t> foo_multi_set = { 185,165,65,16,81,65,65,65 };
+            std::valarray<int32_t> foo_valarry = { 11565,156,651,186,68658,616,1650 };
+            float carray[3] = { 153.0f, 18965.0f, 15455.f };
 
             struct test : JSerializable{};
             struct test2 : test{};
@@ -184,6 +208,30 @@ namespace Collections_Test
 			expect(!is_specialization<decltype(my_arr), std::vector>());
 			expect(!is_specialization<decltype(foo_array), std::vector>());
 			expect(!is_specialization<decltype(foo_list), std::vector>());
+
+            expect(is_specialization<decltype(foo_forward_list), std::forward_list>());
+			expect(!is_specialization<decltype(foo_vector), std::forward_list>());
+			expect(!is_specialization<decltype(my_arr), std::forward_list>());
+			expect(!is_specialization<decltype(foo_array), std::forward_list>());
+			expect(!is_specialization<decltype(foo_list), std::forward_list>());
+
+			expect(is_specialization<decltype(foo_set), std::set>());
+			expect(!is_specialization<decltype(foo_vector), std::set>());
+			expect(!is_specialization<decltype(my_arr), std::set>());
+			expect(!is_specialization<decltype(foo_array), std::set>());
+			expect(!is_specialization<decltype(foo_list), std::set>());
+
+			expect(is_specialization<decltype(foo_multi_set), std::multiset>());
+			expect(!is_specialization<decltype(foo_vector), std::multiset>());
+			expect(!is_specialization<decltype(my_arr), std::multiset>());
+			expect(!is_specialization<decltype(foo_array), std::multiset>());
+			expect(!is_specialization<decltype(foo_list), std::multiset>());
+            
+			expect(is_specialization<decltype(foo_valarry), std::valarray>());
+			expect(!is_specialization<decltype(foo_vector), std::valarray>());
+			expect(!is_specialization<decltype(my_arr), std::valarray>());
+			expect(!is_specialization<decltype(foo_array), std::valarray>());
+			expect(!is_specialization<decltype(foo_list), std::valarray>());
 
             expect(std::is_polymorphic_v<test>);
             expect(std::is_polymorphic_v<test2>);

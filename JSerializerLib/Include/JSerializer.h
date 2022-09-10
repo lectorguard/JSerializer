@@ -149,6 +149,12 @@ private:
     static void Serialize(nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
+
+        using CurrentType = std::remove_reference<decltype(elem)>::type;
+        static_assert(!std::is_pointer_v<CurrentType>, "Serialization does not support pointer types");
+		// Implemented a prototype for carrays, but carrays are not simply lvalue assignable. Needs a lot of copies and special treatment inside generic serialization logic.
+		static_assert(!std::is_array_v<CurrentType>, "Deserialization of carray pointer is not supported, please use insted std::array");
+
         j[names[index]] = DefaultSerialize(elem, pushError);
 
         if constexpr (index + 1 < sizeof...(objects)) {
@@ -160,7 +166,11 @@ private:
     static void Deserialize(const nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
     {
 		auto& elem = get<index>(objects...);
+
 		using CurrentType = std::remove_reference<decltype(elem)>::type;
+        static_assert(!std::is_pointer_v<CurrentType>, "Deserialization does not support pointer types");
+        // Implemented a prototype for carrays, but carrays are not simply lvalue assignable. Needs a lot of copies and special treatment inside generic serialization logic.
+        static_assert(!std::is_array_v<CurrentType>, "Deserialization of carray pointer is not supported, please use insted std::array");
 
         if (!j.contains(names[index]))
         {

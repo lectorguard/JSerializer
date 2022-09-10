@@ -4,6 +4,9 @@
 #include "Utils/Utils.h"
 #include "Serializer/ListVectorSerializer.h"
 #include "Serializer/PolymorphicSerializer.h"
+#include "Serializer/SetSerializer.h"
+#include "Serializer/ArraySerializer.h"
+#include "Serializer/ValarraySerializer.h"
 #include <string>
 #include <functional>
 #include <array>
@@ -26,12 +29,18 @@
 
 using SerializerType = std::variant<
 	ListVectorSerializer, 
-	PolymorphicSerializer>;
+	PolymorphicSerializer,
+	SetSerializer,
+	ArraySerializer,
+	ValarraySerializer>;
 
-inline static constexpr const std::array<SerializerType,2> SerializationBehavior = 
+inline static constexpr const std::array<SerializerType,5> SerializationBehavior = 
 {
 	ListVectorSerializer(),
 	PolymorphicSerializer(),
+	SetSerializer(),
+	ArraySerializer(),
+	ValarraySerializer(),
 };
 
 template<typename T>
