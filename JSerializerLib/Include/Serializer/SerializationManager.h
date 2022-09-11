@@ -2,11 +2,14 @@
 
 #include "nlohmann/json.hpp"
 #include "Utils/Utils.h"
-#include "Serializer/ListVectorSerializer.h"
+#include "Serializer/ListVectorDequeSerializer.h"
 #include "Serializer/PolymorphicSerializer.h"
 #include "Serializer/SetSerializer.h"
 #include "Serializer/ArraySerializer.h"
 #include "Serializer/ValarraySerializer.h"
+#include "Serializer/ForwardListSerializer.h"
+#include "Serializer/MapSerializer.h"
+#include "Serializer/TupleSerializer.h"
 #include <string>
 #include <functional>
 #include <array>
@@ -28,19 +31,25 @@
 
 
 using SerializerType = std::variant<
-	ListVectorSerializer, 
+	ListVectorDequeSerializer, 
 	PolymorphicSerializer,
 	SetSerializer,
 	ArraySerializer,
-	ValarraySerializer>;
+	ValarraySerializer,
+	ForwardListSerializer,
+	MapSerializer,
+	TupleSerializer>;
 
-inline static constexpr const std::array<SerializerType,5> SerializationBehavior = 
+inline static constexpr const std::array<SerializerType, 8> SerializationBehavior =
 {
-	ListVectorSerializer(),
+	ListVectorDequeSerializer(),
 	PolymorphicSerializer(),
 	SetSerializer(),
 	ArraySerializer(),
 	ValarraySerializer(),
+	ForwardListSerializer(),
+	MapSerializer(),
+	TupleSerializer(),
 };
 
 template<typename T>

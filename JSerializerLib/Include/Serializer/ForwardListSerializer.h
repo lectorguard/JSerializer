@@ -3,18 +3,18 @@
 #include "Utils/Utils.h"
 #include "functional"
 #include <optional>
-#include <vector>
+#include <list>
 #include <algorithm>
 
 template<typename T> static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError);
 template<typename T> static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError);
 
-struct ListVectorSerializer
+struct ForwardListSerializer
 {
 	template<typename Type>
-	inline static constexpr bool IsCorrectType() 
+	inline static constexpr bool IsCorrectType()
 	{
-		return is_specialization<Type, std::vector>() || is_specialization<Type, std::list>();
+		return is_specialization<Type, std::forward_list>();
 	}
 
 	template<typename T>
@@ -25,9 +25,9 @@ struct ListVectorSerializer
 			using V = typename T::value_type;
 
 			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](const V& elem) 
-				{ 
-					return DefaultSerialize(elem, pushError); 
+			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](const V& elem)
+				{
+					return DefaultSerialize(elem, pushError);
 				});
 			return json_collection;
 		}
@@ -44,12 +44,14 @@ struct ListVectorSerializer
 			using V = typename T::value_type;
 
 			T temp;
-			std::transform(j.begin(), j.end(), std::back_inserter(temp), [&pushError](const nlohmann::json& json_elem)
+			std::transform(j.begin(), j.end(), std::front_inserter(temp), [&pushError](const nlohmann::json& json_elem)
 				{
 					return DefaultDeserialize<V>(json_elem, pushError);
 				});
+			temp.reverse();
 			return temp;
 		}
 		return std::nullopt;
 	}
 };
+

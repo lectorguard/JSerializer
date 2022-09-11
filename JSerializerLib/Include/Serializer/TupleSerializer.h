@@ -1,23 +1,21 @@
 #pragma once
+#pragma once
 #include "nlohmann/json.hpp"
 #include "Utils/Utils.h"
 #include "functional"
 #include <optional>
-#include <set>
+#include <map>
 #include <algorithm>
 
 template<typename T> static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError);
 template<typename T> static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError);
 
-struct SetSerializer
+struct TupleSerializer
 {
 	template<typename Type>
 	inline static constexpr bool IsCorrectType()
 	{
-		return	is_specialization<Type, std::set>()					|| 
-				is_specialization<Type, std::multiset>()			|| 
-				is_specialization<Type, std::unordered_set>()		|| 
-				is_specialization<Type, std::unordered_multiset>();
+		return is_specialization<Type, std::tuple>();
 	}
 
 	template<typename T>
@@ -25,13 +23,11 @@ struct SetSerializer
 	{
 		if constexpr (IsCorrectType<T>())
 		{
-			using V = typename T::value_type;
-
 			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::inserter(json_collection, json_collection.begin()), [&pushError](const V& elem)
+			std::apply([&json_collection, &pushError](auto&&... args) 
 				{
-					return DefaultSerialize(elem, pushError);
-				});
+				((json_collection.push_back(DefaultSerialize(args, pushError))), ...); 
+				}, obj);
 			return json_collection;
 		}
 		return std::nullopt;
@@ -44,15 +40,21 @@ struct SetSerializer
 
 		if constexpr (IsCorrectType<T>())
 		{
-			using V = typename T::value_type;
-
 			T temp;
-			std::transform(j.begin(), j.end(), std::inserter(temp, temp.begin()), [&pushError](const nlohmann::json& json_elem)
+			if (std::tuple_size<T>() != j.size())
+			{
+				pushError({ JSerErrorTypes::MEMBER_ERROR, "Tuple Size " + std::to_string(std::tuple_size<T>()) + "is not equal to number of elements in json " + std::to_string(j.size()) });
+				return temp;
+			}
+			
+			uint32_t index = 0;
+			std::apply([&index, &j, &pushError](auto&&... args)
 				{
-					return DefaultDeserialize<V>(json_elem, pushError);
-				});
+					((args = DefaultDeserialize<std::remove_reference<decltype(args)>::type>(j.at(index++), pushError)), ...);
+				}, temp);
 			return temp;
 		}
 		return std::nullopt;
 	}
 };
+

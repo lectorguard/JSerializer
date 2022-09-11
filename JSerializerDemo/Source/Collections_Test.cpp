@@ -27,25 +27,25 @@ namespace Collections_Test
 
     struct Foo : JSerializable
     {
-        //std::array<std::string, 2> foo_array = { "hello", "world" };
+        std::array<std::string, 2> foo_array = { "hello", "world" };
         std::vector<int> foo_vector = { 2, 3 };
-        //std::deque<unsigned int> foo_deque = { 17, 26, 45, 78 };
-        //std::forward_list<bool> foo_forward_list = { true, false, true, false };
+        std::deque<unsigned int> foo_deque = { 17, 26, 45, 78 };
+        std::forward_list<bool> foo_forward_list = { true, false, true, false };
         std::list<float> foo_list = { 50.15f, 4848.52f };
         //std::stack<Foo2> foo_stack; // TO DO 
         //std::queue<float> foo_queue; // TO DO
         //std::priority_queue<wchar_t> foo_priority_queue; // TO DO
-        //std::set<bool> foo_set = { true, false , false };
-        //std::multiset<int8_t> foo_multiset = { 7,7,7,7,7,7 };
-        //std::map<std::string, char> foo_map = { {"Hello", 'H'}, {"World", 'W'} };
-        //std::unordered_map<uint16_t, int16_t> foo_unordered_map = { {6,6}, {7,7}, {8,8} };
-        //std::multimap<char, std::string> foo_multimap = { {'H',"Hello"}, {'H', "Hey"}, {'W', "World"}, {'W', "Whatever"} }; // TO DO
-        //std::unordered_set<int64_t> foo_unordered_set = { 15,4589,516,4684,6818,568,18 };
-        //std::unordered_multiset<int64_t> foo_unordered_multiset = { 15,15,15,15,15,15,15,15 };
-        //std::unordered_multimap<char, std::string> foo_unordered_multimap = { {'H',"Hello"}, {'H', "Hey"}, {'W', "World"}, {'W', "Whatever"} }; // TO DO 
-        //std::tuple<int, float, char, std::string> foo_tuple = { 3, 3.0f, 'g', "hello world" };
+        std::set<bool> foo_set = { true, false , false };
+        std::multiset<int8_t> foo_multiset = { 7,7,7,7,7,7 };
+		std::unordered_set<int64_t> foo_unordered_set = { 15,4589,516,4684,6818,568,18 };
+        std::unordered_multiset<int64_t> foo_unordered_multiset = { 15,15,15,15,15,15,15,15 };
+		std::map<std::string, char> foo_map = { {"Hello", 'H'}, {"World", 'W'} };
+		std::unordered_map<uint16_t, int16_t> foo_unordered_map = { {6,6}, {7,7}, {8,8} };
+		std::multimap<char, std::string> foo_multimap = { {'H',"Hello"}, {'H', "Hey"}, {'W', "World"}, {'W', "Whatever"} }; // TO DO
+		std::unordered_multimap<char, std::string> foo_unordered_multimap = { {'H',"Hello"}, {'H', "Hey"}, {'W', "World"}, {'W', "Whatever"} }; // TO DO 
+        std::tuple<int, float, char, std::string> foo_tuple = { 3, 3.0f, 'g', "hello world" };
         //std::bitset<4> foo_bitset{"0011"};
-        //std::valarray<double> foo_valarray = { 15.1818,4564.4898,45.89 };
+        std::valarray<double> foo_valarray = { 15.1818,4564.4898,45.89 };
 
         Foo()
         {
@@ -59,17 +59,22 @@ namespace Collections_Test
             //foo_priority_queue.push('L');
             //foo_priority_queue.push('W');
 
-            JSER_ADD(/*foo_array,*/ foo_vector /*,foo_deque, foo_forward_list,*/ ,foo_list /*foo_set*/ /*,foo_stack, foo_queue*/);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
+            JSER_ADD(foo_array, foo_vector, foo_list, foo_set, foo_multiset, foo_valarray, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset);
+            JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple);
+
+            //JSER_ADD(/*foo_array,*/ foo_vector /*,foo_deque, foo_forward_list,*/ ,foo_list /*foo_set*/ /*,foo_stack, foo_queue*/);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
            /* JSER_ADD(foo_multiset, foo_map, foo_unordered_map, foo_unordered_set, foo_unordered_multiset, foo_tuple, foo_valarray);*/// , foo_multimap);// , foo_unordered_set, foo_unordered_multiset, foo_unordered_multimap, foo_tuple);
         };
 
         void compare(const Foo& Rhs)
         {
             using namespace boost::ut;
-            //expect(foo_array == Rhs.foo_array);
+
+            expect(foo_array == Rhs.foo_array);
             expect(foo_vector == Rhs.foo_vector);
-            /*expect(foo_forward_list == Rhs.foo_forward_list);*/
+            expect(foo_forward_list == Rhs.foo_forward_list);
             expect(foo_list == Rhs.foo_list);
+            expect(foo_deque == Rhs.foo_deque);
             //expect(foo_stack == Rhs.foo_stack);
             //expect(foo_queue == Rhs.foo_queue);
             
@@ -86,17 +91,17 @@ namespace Collections_Test
             //    foo_priority_queue.pop();
             //    priority_queue_copy.pop();
             //}
-			//expect(foo_set == Rhs.foo_set);
-			//expect(foo_multiset == Rhs.foo_multiset);
-			//expect(foo_map == Rhs.foo_map);
-			//expect(foo_unordered_map == Rhs.foo_unordered_map);
-			////expect(foo_multimap == Rhs.foo_multimap);
-			//expect(foo_unordered_set == Rhs.foo_unordered_set);
-			//expect(foo_unordered_multiset == Rhs.foo_unordered_multiset);
-			////expect(foo_unordered_multimap == Rhs.foo_unordered_multimap);
-			//expect(foo_tuple == Rhs.foo_tuple);
+			expect(foo_set == Rhs.foo_set);
+			expect(foo_multiset == Rhs.foo_multiset);
+			expect(foo_map == Rhs.foo_map);
+			expect(foo_unordered_map == Rhs.foo_unordered_map);
+			expect(foo_multimap == Rhs.foo_multimap);
+			expect(foo_unordered_set == Rhs.foo_unordered_set);
+			expect(foo_unordered_multiset == Rhs.foo_unordered_multiset);
+			expect(foo_unordered_multimap == Rhs.foo_unordered_multimap);
+			expect(foo_tuple == Rhs.foo_tuple);
 			////expect(foo_bitset == Rhs.foo_bitset);
-			//expect(std::equal(std::begin(foo_valarray), std::end(foo_valarray), std::begin(Rhs.foo_valarray)));
+			expect(std::equal(std::begin(foo_valarray), std::end(foo_valarray), std::begin(Rhs.foo_valarray)));
             
         };
     };
@@ -137,44 +142,83 @@ namespace Collections_Test
 
         "simple iterable types "_test = []()
         {
-            struct test : JSerializable
+            struct CollectionTest : JSerializable
             {
-                test() { JSER_ADD(foo, foo_list, foo_vector ,foo_forward_list ,foo_set, foo_multi_set, foo_valarry); }
+                CollectionTest() 
+                { 
+                    JSER_ADD(foo, foo_list, foo_vector ,foo_forward_list ,foo_set, foo_multi_set);
+                    JSER_ADD(foo_valarry, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset);
+                    JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple);
+                }
                 std::array<int, 3> foo = { 0,0,0 };
                 std::list<int> foo_list = { 45,48,513,8,61,86,156 };
 				std::vector<double> foo_vector = { 16561.4681,168.168,416811.68186,4648.864 };
 				std::forward_list<bool> foo_forward_list = { false,true, true, false };
 				std::set<int32_t> foo_set = { 5,4,5658,6 };
 				std::multiset<int32_t> foo_multi_set = { 185,165,65,16,81,65,65,65 };
-				std::valarray<int32_t> foo_valarry = { 11565,156,651,186,68658,616,1650 };            
+				std::valarray<int32_t> foo_valarry = { 11565,156,651,186,68658,616,1650 };   
+                std::deque<unsigned int> foo_deque = { 17, 26, 45, 78 };
+				std::unordered_set<int64_t> foo_unordered_set = { 15,4589,516,4684,6818,568,18 };
+				std::unordered_multiset<int64_t> foo_unordered_multiset = { 15,15,15,15,15,15,15,15 };
+				
+                std::map<std::string, char> foo_map = { {"Hello", 'H'}, {"World", 'W'} };
+		        std::unordered_map<uint16_t, int16_t> foo_unordered_map = { {6,6}, {7,7}, {8,8} };
+		        std::multimap<char, std::string> foo_multimap = { {'H',"Hello"}, {'H', "Hey"}, {'W', "World"}, {'W', "Whatever"} }; 
+		        std::unordered_multimap<char, std::string> foo_unordered_multimap = { {'H',"Hello"}, {'H', "Hey"}, {'W', "World"}, {'W', "Whatever"} }; 
+
+                std::tuple<int, float, char, std::string> foo_tuple = { 3, 3.0f, 'g', "hello world" };
             };
 
-            test t;
+            CollectionTest t;
             t.foo[0] = 4;
             t.foo[1] = 3;
             t.foo[2] = 24;
             t.foo_list.push_back(156);
             t.foo_vector.push_back(158551.15616);
             t.foo_forward_list.push_front(false);
+            t.foo_forward_list.push_front(false);
             t.foo_set.insert(65);
             t.foo_multi_set.emplace(4557);
             t.foo_valarry[3] = 600;
+            t.foo_deque.push_back(5);
+            t.foo_unordered_set.insert(155);
+            t.foo_unordered_multiset.insert(16);
+			t.foo_map.insert({ "!", '!' });
+			t.foo_unordered_map.erase(6);
+			t.foo_multimap.insert({ 'W', "What" });
+			t.foo_unordered_multimap.insert({ 'K', "Keep it short and simple" });
+            std::get<1>(t.foo_tuple) = 15.0f;
+
+            //std::cout << std::tuple_size<decltype(t.foo_tuple)>() << std::endl;
             std::list<JSerError> errorList;
             std::string result = t.SerializeObjectString(std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
 
-            test t2;
+            CollectionTest t2;
             t2.DeserializeObject(result, std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
 
             expect(t2.foo == t.foo);
             expect(t2.foo_list == t.foo_list);
             expect(t2.foo_vector == t.foo_vector);
-            expect(t2.foo_forward_list == t.foo_forward_list);
             expect(t2.foo_set == t.foo_set);
             expect(t2.foo_multi_set == t.foo_multi_set);
             expect(std::equal(std::begin(t2.foo_valarry), std::end(t2.foo_valarry), std::begin(t.foo_valarry)));
+            expect(t2.foo_deque == t.foo_deque);
+            expect(t2.foo_forward_list == t.foo_forward_list);
+            expect(t2.foo_unordered_set == t.foo_unordered_set);
+            expect(t2.foo_unordered_multiset == t.foo_unordered_multiset);
 
+            bool is_map_equal = t.foo_map == t2.foo_map;
+            bool is_unordered_map_equal = t2.foo_unordered_map == t.foo_unordered_map;
+            bool is_multimap_equal = t.foo_multimap == t2.foo_multimap;
+            bool is_unordered_multimap_equal = t.foo_unordered_multimap == t2.foo_unordered_multimap;
+            expect(is_map_equal);
+            expect(is_unordered_map_equal);
+            expect(is_multimap_equal);
+            expect(is_unordered_multimap_equal);
+
+            expect(t2.foo_tuple == t.foo_tuple);
         };
 
         "check correct type detection"_test = []()
