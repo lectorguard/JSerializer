@@ -28,12 +28,13 @@ struct MapSerializer
 			using V = typename T::value_type;
 
 			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](const V& elem)
+			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](V elem)
 				{
 					auto key_element = std::get<0>(elem);
 					auto value_element = std::get<1>(elem);
 					return nlohmann::json::array({ DefaultSerialize(key_element, pushError) , DefaultSerialize(value_element, pushError) });
 				});
+
 			return json_collection;
 		}
 		return std::nullopt;

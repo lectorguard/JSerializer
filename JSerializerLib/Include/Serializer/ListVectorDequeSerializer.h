@@ -25,7 +25,7 @@ struct ListVectorDequeSerializer
 			using V = typename T::value_type;
 
 			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](const V& elem) 
+			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](V elem) 
 				{ 
 					return DefaultSerialize(elem, pushError); 
 				});

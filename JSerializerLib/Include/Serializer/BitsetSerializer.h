@@ -3,21 +3,17 @@
 #include "Utils/Utils.h"
 #include "functional"
 #include <optional>
-#include <set>
-#include <algorithm>
+#include <bitset>
 
 template<typename T> static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError);
 template<typename T> static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError);
 
-struct SetSerializer
+struct BitsetSerializer
 {
 	template<typename Type>
 	inline static constexpr bool IsCorrectType()
 	{
-		return	is_specialization<Type, std::set>()					|| 
-				is_specialization<Type, std::multiset>()			|| 
-				is_specialization<Type, std::unordered_set>()		|| 
-				is_specialization<Type, std::unordered_multiset>();
+		return is_bitset<Type>();
 	}
 
 	template<typename T>
@@ -25,14 +21,7 @@ struct SetSerializer
 	{
 		if constexpr (IsCorrectType<T>())
 		{
-			using V = typename T::value_type;
-
-			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::inserter(json_collection, json_collection.begin()), [&pushError](V elem)
-				{
-					return DefaultSerialize(elem, pushError);
-				});
-			return json_collection;
+			return nlohmann::json(obj.to_string());
 		}
 		return std::nullopt;
 	}
@@ -44,14 +33,7 @@ struct SetSerializer
 
 		if constexpr (IsCorrectType<T>())
 		{
-			using V = typename T::value_type;
-
-			T temp;
-			std::transform(j.begin(), j.end(), std::inserter(temp, temp.begin()), [&pushError](const nlohmann::json& json_elem)
-				{
-					return DefaultDeserialize<V>(json_elem, pushError);
-				});
-			return temp;
+			return T(j.get<std::string>());
 		}
 		return std::nullopt;
 	}

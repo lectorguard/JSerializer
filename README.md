@@ -22,6 +22,7 @@ Simple to use json serializer for c++
     - Any container could be filled with polymorph objects
     - test map of array of something else of ....
     - Bessere test schreiben lul
+    - Füge korrekte typ identifikationstest hinzu
 - Create namespace around the library
 - Write docs inside this readme 
 

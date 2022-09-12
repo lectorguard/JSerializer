@@ -10,6 +10,8 @@
 #include "Serializer/ForwardListSerializer.h"
 #include "Serializer/MapSerializer.h"
 #include "Serializer/TupleSerializer.h"
+#include "Serializer/BitsetSerializer.h"
+#include "Serializer/StackAndQueueSerializer.h"
 #include <string>
 #include <functional>
 #include <array>
@@ -38,9 +40,11 @@ using SerializerType = std::variant<
 	ValarraySerializer,
 	ForwardListSerializer,
 	MapSerializer,
-	TupleSerializer>;
+	TupleSerializer,
+	BitsetSerializer,
+	StackAndQueueSerializer>;
 
-inline static constexpr const std::array<SerializerType, 8> SerializationBehavior =
+inline static constexpr const std::array<SerializerType, 10> SerializationBehavior =
 {
 	ListVectorDequeSerializer(),
 	PolymorphicSerializer(),
@@ -50,15 +54,19 @@ inline static constexpr const std::array<SerializerType, 8> SerializationBehavio
 	ForwardListSerializer(),
 	MapSerializer(),
 	TupleSerializer(),
+	BitsetSerializer(),
+	StackAndQueueSerializer(),
 };
 
 template<typename T>
 constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, std::function<void(JSerError)>& pushError)
 {
+	static_assert(!std::is_const_v<T>, "Function ptr are used which are not following cost correctness, so no const value can be passed here");
+
 	for (const auto& elem : SerializationBehavior)
 	{
 		std::optional<nlohmann::json> j;
-		std::visit([&j, &obj, &pushError](const auto& x)
+		std::visit([&j, &obj, &pushError](auto x)
 			{
 				j = x.Serialize(obj, pushError);
 			},elem);

@@ -19,7 +19,7 @@ struct PolymorphicSerializer
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(T& obj, std::function<void(JSerError)>& pushError)
 	{
 		if constexpr (IsCorrectType<T>())
 		{

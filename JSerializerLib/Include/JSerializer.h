@@ -96,7 +96,7 @@ struct JSerializable {
     }
 
 private:
-    constexpr void executeValidation()
+    constexpr void executeValidation() 
     {
         for (std::function<void()>& func : Validation)
         {
@@ -104,7 +104,7 @@ private:
         }
     }
 
-    nlohmann::json SerializeObject_Internal(std::function<void(JSerError)>& pushError)
+    nlohmann::json SerializeObject_Internal(std::function<void(JSerError)>& pushError) 
     {
         executeValidation();
         if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
