@@ -160,7 +160,6 @@ namespace Error_Test
 				};
 			};
 
-
 			when("you want to deserialize a stack ") = []()
 			{
 				//std::vector<std::priority_queue<int>> help;

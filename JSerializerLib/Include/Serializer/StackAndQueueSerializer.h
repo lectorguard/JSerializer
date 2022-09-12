@@ -7,19 +7,19 @@
 #include <queue>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError);
+template<typename T> static nlohmann::json DefaultSerialize(const T& elem, const std::function<void(JSerError)>& pushError);
+template<typename T> static T DefaultDeserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError);
 
 struct StackAndQueueSerializer
 {
-	template<typename Type>
+	template<typename Type, typename RawType = std::decay_t<Type>>
 	inline static constexpr bool IsCorrectType()
 	{
-		return is_specialization<Type, std::stack>() || is_specialization<Type, std::queue>();
+		return is_specialization<RawType, std::stack>() || is_specialization<RawType, std::queue>();
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(const T& obj, const std::function<void(JSerError)>& pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
 		{
@@ -27,7 +27,7 @@ struct StackAndQueueSerializer
 
 			nlohmann::json json_collection = nlohmann::json::array();
 			auto casted_container = obj._Get_container();
-			std::transform(casted_container.begin(), casted_container.end(), std::back_inserter(json_collection), [&pushError](V elem)
+			std::transform(casted_container.begin(), casted_container.end(), std::back_inserter(json_collection), [&pushError](const V& elem)
 				{
 					return DefaultSerialize(elem, pushError);
 				});
@@ -37,7 +37,7 @@ struct StackAndQueueSerializer
 	}
 
 	template<typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError) const
+	std::optional<T> Deserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
 

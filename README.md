@@ -23,6 +23,7 @@ Simple to use json serializer for c++
     - test map of array of something else of ....
     - Bessere test schreiben lul
     - Füge korrekte typ identifikationstest hinzu
+    - Bringe const für serialization zurück
 - Create namespace around the library
 - Write docs inside this readme 
 

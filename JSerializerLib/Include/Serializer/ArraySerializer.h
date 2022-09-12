@@ -6,19 +6,19 @@
 #include <array>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError);
+template<typename T> static nlohmann::json DefaultSerialize(const T& elem, const std::function<void(JSerError)>& pushError);
+template<typename T> static T DefaultDeserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError);
 
 struct ArraySerializer
 {
-	template<typename Type>
+	template<typename Type, typename RawType = std::decay_t<Type>>
 	inline static constexpr bool IsCorrectType()
 	{
-		return is_std_array<Type>();
+		return is_std_array<RawType>();
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(const T& obj, const std::function<void(JSerError)>& pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
 		{
@@ -36,7 +36,7 @@ struct ArraySerializer
 	}
 
 	template<typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError) const
+	std::optional<T> Deserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
 

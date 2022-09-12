@@ -44,15 +44,15 @@ concept JSerErrorCompatible = std::is_same_v<typename T::value_type, JSerError>;
 
 struct CustomSerializeItem
 {
-	std::function<void(nlohmann::json&, std::function<void(JSerError)>&)> SerializeCB = nullptr;
-	std::function<void(nlohmann::json&, std::function<void(JSerError)>&)> DeserializeCB = nullptr;
+	std::function<void(nlohmann::json&, const std::function<void(JSerError)>&)> SerializeCB = nullptr;
+	std::function<void(nlohmann::json&, const std::function<void(JSerError)>&)> DeserializeCB = nullptr;
 };
 
 struct DefaultSerializeItem
 {
 	std::vector<std::string> ParameterNames = {};
-	std::function<void(nlohmann::json&, std::vector<std::string>&, std::function<void(JSerError)>&)> SerializeCB = nullptr;
-	std::function<void(nlohmann::json&, std::vector<std::string>&, std::function<void(JSerError)>&)> DeserializeCB = nullptr;
+	std::function<void(nlohmann::json&, const std::vector<std::string>&, const std::function<void(JSerError)>&)> SerializeCB = nullptr;
+	std::function<void(nlohmann::json&, const std::vector<std::string>&, const std::function<void(JSerError)>&)> DeserializeCB = nullptr;
 };
 
 template<typename Test, template<typename...> class Ref>

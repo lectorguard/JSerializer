@@ -15,7 +15,7 @@
 
 struct JSerializable {
 
-    using CustomCB = std::function<void(nlohmann::json&, std::function<void(JSerError)>&)>;
+    using CustomCB = std::function<void(nlohmann::json&, const std::function<void(JSerError)>&)>;
 
     virtual ~JSerializable() = default;
 
@@ -71,14 +71,14 @@ struct JSerializable {
 
         DefaultSerializeChunks.push_back({
             names,
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, std::vector<std::string> parameterNames, std::function<void(JSerError)>& pushError)
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, const std::vector<std::string>& parameterNames,const  std::function<void(JSerError)>& pushError)
             {
                 std::apply([&parameterNames,&j, &pushError](auto &&... args)
                     {
                         Serialize(j, parameterNames, pushError, args...);
                     }, tup);
             },
-            [tup = std::forward_as_tuple(objects...),this](nlohmann::json j, std::vector<std::string> parameterNames, std::function<void(JSerError)>& pushError) mutable
+            [tup = std::forward_as_tuple(objects...),this](nlohmann::json j, const std::vector<std::string>& parameterNames,const std::function<void(JSerError)>& pushError) mutable
             {
                 std::apply([&parameterNames, &j, &pushError](auto &&... args)
                     {
@@ -96,15 +96,15 @@ struct JSerializable {
     }
 
 private:
-    constexpr void executeValidation() 
+    constexpr void executeValidation() const
     {
-        for (std::function<void()>& func : Validation)
+        for (const std::function<void()>& func : Validation)
         {
             func();
         }
     }
 
-    nlohmann::json SerializeObject_Internal(std::function<void(JSerError)>& pushError) 
+    nlohmann::json SerializeObject_Internal(const std::function<void(JSerError)>& pushError) const
     {
         executeValidation();
         if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
@@ -112,28 +112,28 @@ private:
             pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name())+ ", before calling SerializeObject. "});
         }
         nlohmann::json j;
-        for (DefaultSerializeItem& item : DefaultSerializeChunks)
+        for (const DefaultSerializeItem& item : DefaultSerializeChunks)
         {
             item.SerializeCB(j,item.ParameterNames, pushError);
         }
-        for (CustomSerializeItem& item : CustomSerializeChunks)
+        for (const CustomSerializeItem& item : CustomSerializeChunks)
         {
             item.SerializeCB(j, pushError);
         }
         return j;
     }
 
-    void DeserializeObject_Internal(nlohmann::json j, std::function<void(JSerError)>& pushError)
+    void DeserializeObject_Internal(nlohmann::json j, const std::function<void(JSerError)>& pushError)
     {
         if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
         {
             pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling DeserializeObject."});
         }
-        for (DefaultSerializeItem& item : DefaultSerializeChunks)
+        for (const DefaultSerializeItem& item : DefaultSerializeChunks)
         {
             item.DeserializeCB(j, item.ParameterNames, pushError);
         }
-        for (CustomSerializeItem& item : CustomSerializeChunks)
+        for (const CustomSerializeItem& item : CustomSerializeChunks)
         {
             item.DeserializeCB(j, pushError);
         }
@@ -146,7 +146,7 @@ private:
     }
 
     template<size_t index = 0, typename...O>
-    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
+    static void Serialize(nlohmann::json& j, const std::vector<std::string> names, const std::function<void(JSerError)>& pushError, O&& ... objects)
     {
         auto& elem = get<index>(objects...);
 
@@ -163,7 +163,7 @@ private:
     }
 
     template<size_t index = 0, typename...O>
-    static void Deserialize(const nlohmann::json& j, const std::vector<std::string> names, std::function<void(JSerError)>& pushError, O&& ... objects)
+    static void Deserialize(const nlohmann::json& j, const std::vector<std::string> names, const std::function<void(JSerError)>& pushError, O&& ... objects)
     {
 		auto& elem = get<index>(objects...);
 

@@ -19,13 +19,13 @@ namespace Validation_Test
             }
 
             JSER_ADD_CUSTOM(
-                [this](nlohmann::json& j, std::function<void(JSerError)>& pushError)
+                [this](nlohmann::json& j,const std::function<void(JSerError)>& pushError)
                 {
                    std::deque<float> deque_casted = foo_stack._Get_container();
                    std::vector<float> serializable(deque_casted.begin(), deque_casted.end());
                    j["foo"] = serializable;
                 },
-                [this](nlohmann::json& j, std::function<void(JSerError)>& pushError)
+                [this](nlohmann::json& j,const std::function<void(JSerError)>& pushError)
                 {
 					if (j.contains("foo"))
 					{
