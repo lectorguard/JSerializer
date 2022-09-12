@@ -13,7 +13,8 @@
 #include "Serializer/SerializationManager.h"
 
 
-struct JSerializable {
+struct JSerializable 
+{
 
     using CustomCB = std::function<void(nlohmann::json&, const std::function<void(JSerError)>&)>;
 
@@ -71,7 +72,7 @@ struct JSerializable {
 
         DefaultSerializeChunks.push_back({
             names,
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, const std::vector<std::string>& parameterNames,const  std::function<void(JSerError)>& pushError)
+            [tup = std::make_tuple(objects...)](nlohmann::json& j, const std::vector<std::string>& parameterNames,const  std::function<void(JSerError)>& pushError)
             {
                 std::apply([&parameterNames,&j, &pushError](auto &&... args)
                     {
@@ -129,11 +130,11 @@ private:
         {
             pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling DeserializeObject."});
         }
-        for (const DefaultSerializeItem& item : DefaultSerializeChunks)
+        for (DefaultSerializeItem& item : DefaultSerializeChunks)
         {
             item.DeserializeCB(j, item.ParameterNames, pushError);
         }
-        for (const CustomSerializeItem& item : CustomSerializeChunks)
+        for (CustomSerializeItem& item : CustomSerializeChunks)
         {
             item.DeserializeCB(j, pushError);
         }

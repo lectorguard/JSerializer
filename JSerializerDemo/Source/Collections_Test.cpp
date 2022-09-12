@@ -117,6 +117,8 @@ namespace Collections_Test
             std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization of many object associations throws error";
 
+            std::cout << result << std::endl;
+
             Foo deserialized;
             deserialized.DeserializeObject(result, std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Deserialization of many object associations throws error";
