@@ -27,13 +27,6 @@
 namespace Collections_Test
 {
 
-	struct Foo2 : JSerializable
-	{
-		int Kartoffel = 42;
-        Foo2() { JSER_ADD(Kartoffel); };
-		
-	};
-
     boost::ut::suite Collections_Test = [] {
         using namespace boost::ut;
 
@@ -84,7 +77,7 @@ namespace Collections_Test
                 std::tuple<int, float, char, std::string> foo_tuple = { 3, 3.0f, 'g', "hello world" };
                 std::bitset<4> foo_bitset{ "0011" };
 
-				std::stack<Foo2> foo_stack;  
+				std::stack<int> foo_stack;  
                 std::queue<float> foo_queue; 
                 std::priority_queue<wchar_t> foo_priority_queue;
             };
@@ -109,9 +102,9 @@ namespace Collections_Test
 			t.foo_unordered_multimap.insert({ 'K', "Keep it short and simple" });
             std::get<1>(t.foo_tuple) = 15.0f;
             t.foo_bitset |= 0b1100;
-			t.foo_stack.push(Foo2());
-			t.foo_stack.push(Foo2());
-			t.foo_stack.push(Foo2());
+			t.foo_stack.push(25);
+			t.foo_stack.push(33);
+			t.foo_stack.push(47);
 			t.foo_queue.push(10.3f);
 			t.foo_queue.push(12.0f);
 			t.foo_queue.push(45351.565130f);
@@ -150,7 +143,7 @@ namespace Collections_Test
             expect(t2.foo_tuple == t.foo_tuple);
             expect(t2.foo_bitset == t.foo_bitset);
 
-			//expect(t2.foo_stack == t.foo_stack);
+			expect(t2.foo_stack == t.foo_stack);
 			expect(t2.foo_queue == t.foo_queue);
 
             bool is_same_size_priority_queues = t2.foo_priority_queue.size() == t.foo_priority_queue.size();
