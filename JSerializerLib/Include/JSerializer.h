@@ -72,7 +72,7 @@ struct JSerializable
 
         DefaultSerializeChunks.push_back({
             names,
-            [tup = std::make_tuple(objects...)](nlohmann::json& j, const std::vector<std::string>& parameterNames,const  std::function<void(JSerError)>& pushError)
+            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, const std::vector<std::string>& parameterNames, const std::function<void(JSerError)>& pushError)
             {
                 std::apply([&parameterNames,&j, &pushError](auto &&... args)
                     {
@@ -158,7 +158,8 @@ private:
 
         j[names[index]] = DefaultSerialize(elem, pushError);
 
-        if constexpr (index + 1 < sizeof...(objects)) {
+        if constexpr (index + 1 < sizeof...(objects)) 
+        {
             Serialize<index + 1>(j, names, pushError, std::forward<O>(objects)...);
         }
     }
