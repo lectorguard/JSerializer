@@ -34,7 +34,7 @@ namespace Collections_Test
         std::list<float> foo_list = { 50.15f, 4848.52f };
         std::stack<Foo2> foo_stack; // TO DO 
         std::queue<float> foo_queue; // TO DO
-        //std::priority_queue<wchar_t> foo_priority_queue; // TO DO
+        std::priority_queue<wchar_t> foo_priority_queue; // TO DO
         std::set<bool> foo_set = { true, false , false };
         std::multiset<int8_t> foo_multiset = { 7,7,7,7,7,7 };
 		std::unordered_set<int64_t> foo_unordered_set = { 15,4589,516,4684,6818,568,18 };
@@ -55,16 +55,14 @@ namespace Collections_Test
             foo_queue.push(10.3f);
             foo_queue.push(12.0f);
             foo_queue.push(45351.565130f);
-            //foo_priority_queue.push(24);
-            //foo_priority_queue.push('L');
-            //foo_priority_queue.push('W');
+            foo_priority_queue.push(24);
+            foo_priority_queue.push('L');
+            foo_priority_queue.push('W');
 
             JSER_ADD(foo_array, foo_vector, foo_list, foo_set, foo_multiset, foo_valarray, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset);
             JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple, foo_bitset);
-            JSER_ADD(foo_stack, foo_queue);
+            JSER_ADD(foo_stack, foo_queue, foo_priority_queue);
 
-            //JSER_ADD(/*foo_array,*/ foo_vector /*,foo_deque, foo_forward_list,*/ ,foo_list /*foo_set*/ /*,foo_stack, foo_queue*/);//, /*foo_stack,*/ foo_queue, foo_priority_queue, foo_set);
-           /* JSER_ADD(foo_multiset, foo_map, foo_unordered_map, foo_unordered_set, foo_unordered_multiset, foo_tuple, foo_valarray);*/// , foo_multimap);// , foo_unordered_set, foo_unordered_multiset, foo_unordered_multimap, foo_tuple);
         };
 
         void compare(const Foo& Rhs)
@@ -85,13 +83,13 @@ namespace Collections_Test
             //    foo_queue.pop();
             //}
             
-            //std::priority_queue<wchar_t> priority_queue_copy = Rhs.foo_priority_queue;
-            //while (!foo_priority_queue.empty())
-            //{
-            //    expect(foo_priority_queue.top() == priority_queue_copy.top());
-            //    foo_priority_queue.pop();
-            //    priority_queue_copy.pop();
-            //}
+            std::priority_queue<wchar_t> priority_queue_copy = Rhs.foo_priority_queue;
+            while (!foo_priority_queue.empty())
+            {
+                expect(foo_priority_queue.top() == priority_queue_copy.top());
+                foo_priority_queue.pop();
+                priority_queue_copy.pop();
+            }
 			expect(foo_set == Rhs.foo_set);
 			expect(foo_multiset == Rhs.foo_multiset);
 			expect(foo_map == Rhs.foo_map);
@@ -150,7 +148,7 @@ namespace Collections_Test
                     JSER_ADD(foo, foo_list, foo_vector ,foo_forward_list ,foo_set, foo_multi_set);
                     JSER_ADD(foo_valarry, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset);
                     JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple, foo_bitset);
-                    JSER_ADD(foo_stack, foo_queue);
+                    JSER_ADD(foo_stack, foo_queue, foo_priority_queue);
                 }
                 std::array<int, 3> foo = { 0,0,0 };
                 std::list<int> foo_list = { 45,48,513,8,61,86,156 };

@@ -12,6 +12,7 @@
 #include "Serializer/TupleSerializer.h"
 #include "Serializer/BitsetSerializer.h"
 #include "Serializer/StackAndQueueSerializer.h"
+#include "Serializer/PriorityQueueSerializer.h"
 #include <string>
 #include <functional>
 #include <array>
@@ -42,9 +43,10 @@ using SerializerType = std::variant<
 	MapSerializer,
 	TupleSerializer,
 	BitsetSerializer,
-	StackAndQueueSerializer>;
+	StackAndQueueSerializer,
+	PriorityQueueSerializer>;
 
-inline static constexpr const std::array<SerializerType, 10> SerializationBehavior =
+inline static constexpr const std::array<SerializerType, 11> SerializationBehavior =
 {
 	ListVectorDequeSerializer(),
 	PolymorphicSerializer(),
@@ -56,6 +58,7 @@ inline static constexpr const std::array<SerializerType, 10> SerializationBehavi
 	TupleSerializer(),
 	BitsetSerializer(),
 	StackAndQueueSerializer(),
+	PriorityQueueSerializer(),
 };
 
 template<typename T>
