@@ -14,7 +14,7 @@ namespace CustomSerialization_Test
         Foo()
         {
             JSER_ADD_CUSTOM(
-                [this](nlohmann::json& j, const std::function<void(JSerError)>& pushError)
+                [this](nlohmann::json& j, PushErrorType pushError)
                 {
                     const std::string elementName = "foo";
                     for (std::size_t index = 0; index < foo.size(); ++index)
@@ -23,7 +23,7 @@ namespace CustomSerialization_Test
                         j[currentName] = foo[index];
                     }
                 },
-                [this](nlohmann::json& j, const std::function<void(JSerError)>& pushError)
+                [this](nlohmann::json& j, PushErrorType pushError)
                 {
                     const std::string elementName = "foo";
                     uint32_t currentIndex = 0;

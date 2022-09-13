@@ -6,26 +6,26 @@
 #include <vector>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(const T& elem, const std::function<void(JSerError)>& pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError);
+template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
+template<typename T> static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
 
 struct ListVectorDequeSerializer
 {
-	template<typename Type, typename RawType = std::decay_t<Type>>
+	template<typename Type>
 	inline static constexpr bool IsCorrectType() 
 	{
-		return is_specialization<RawType, std::vector>() || is_specialization<RawType, std::list>() || is_specialization<RawType, std::deque>();
+		return is_specialization<Type, std::vector>() || is_specialization<Type, std::list>() || is_specialization<Type, std::deque>();
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(const T& obj, const std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
 		{
 			using V = typename T::value_type;
 
 			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](const V& elem) 
+			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](V elem) 
 				{ 
 					return DefaultSerialize(elem, pushError); 
 				});
@@ -35,7 +35,7 @@ struct ListVectorDequeSerializer
 	}
 
 	template<typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError) const
+	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
 

@@ -76,10 +76,10 @@ struct Outer : public JSerializable {
         Inner()
         {
             JSER_ADD_CUSTOM(
-                [this](nlohmann::json& j,const std::function<void(JSerError)>& pushError) {
+                [this](nlohmann::json& j, PushErrorType pushError) {
                     j["string"] = string; 
                 }, 
-                [this](nlohmann::json& j, const std::function<void(JSerError)>& pushError) {
+                [this](nlohmann::json& j, PushErrorType pushError) {
                     if (j.contains("string"))
                         string = j["string"];
                     else

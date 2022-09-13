@@ -6,25 +6,25 @@
 
 
 struct JSerializable;
-nlohmann::json SerializeObject_Internal(const std::function<void(JSerError)>& pushError);
-void DeserializeObject_Internal(nlohmann::json j, const std::function<void(JSerError)>& pushError);
+nlohmann::json SerializeObject_Internal(PushErrorType pushError);
+void DeserializeObject_Internal(nlohmann::json j, PushErrorType pushError);
 
 
 struct PolymorphicSerializer
 {
-	template<typename Type, typename RawType = std::decay_t<Type>>
+	template<typename Type>
 	inline static constexpr bool IsCorrectType() 
 	{
-		return std::is_polymorphic_v<RawType>;
+		return std::is_polymorphic_v<Type>;
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(const T& obj, const std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError)
 	{
 		if constexpr (IsCorrectType<T>())
 		{
 			nlohmann::json j;
-			if (const JSerializable* serializable = dynamic_cast<const JSerializable*>(&obj)) // not constexpr
+			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&obj)) // not constexpr
 			{
 				if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
 				{
@@ -39,7 +39,7 @@ struct PolymorphicSerializer
 	};
 
 	template<typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError) const
+	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
 		{

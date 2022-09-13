@@ -41,18 +41,20 @@ struct JSerError
 template<class T>
 concept JSerErrorCompatible = std::is_same_v<typename T::value_type, JSerError>;
 
+using PushErrorType = typename std::function<void(JSerError)>&;
+
 
 struct CustomSerializeItem
 {
-	std::function<void(nlohmann::json&, const std::function<void(JSerError)>&)> SerializeCB = nullptr;
-	std::function<void(nlohmann::json&, const std::function<void(JSerError)>&)> DeserializeCB = nullptr;
+	std::function<void(nlohmann::json&, PushErrorType)> SerializeCB = nullptr;
+	std::function<void(nlohmann::json&, PushErrorType)> DeserializeCB = nullptr;
 };
 
 struct DefaultSerializeItem
 {
 	std::vector<std::string> ParameterNames = {};
-	std::function<void(nlohmann::json&, const std::vector<std::string>&, const std::function<void(JSerError)>&)> SerializeCB = nullptr;
-	std::function<void(nlohmann::json&, const std::vector<std::string>&, const std::function<void(JSerError)>&)> DeserializeCB = nullptr;
+	std::function<void(nlohmann::json&, const std::vector<std::string>&, PushErrorType)> SerializeCB = nullptr;
+	std::function<void(nlohmann::json&, const std::vector<std::string>&, PushErrorType)> DeserializeCB = nullptr;
 };
 
 template<typename Test, template<typename...> class Ref>
@@ -72,5 +74,7 @@ struct is_bitset : std::false_type {};
 
 template<std::size_t N>
 struct is_bitset<std::bitset<N>> : std::true_type {};
+
+
 
 

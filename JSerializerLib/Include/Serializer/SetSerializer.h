@@ -6,29 +6,29 @@
 #include <set>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(const T& elem, const std::function<void(JSerError)>& pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError);
+template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
+template<typename T> static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
 
 struct SetSerializer
 {
-	template<typename Type, typename RawType = std::decay_t<Type>>
+	template<typename Type>
 	inline static constexpr bool IsCorrectType()
 	{
-		return	is_specialization<RawType, std::set>()					|| 
-				is_specialization<RawType, std::multiset>()			|| 
-				is_specialization<RawType, std::unordered_set>()		|| 
-				is_specialization<RawType, std::unordered_multiset>();
+		return	is_specialization<Type, std::set>()					|| 
+				is_specialization<Type, std::multiset>()			|| 
+				is_specialization<Type, std::unordered_set>()		|| 
+				is_specialization<Type, std::unordered_multiset>();
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(const T& obj, const std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
 		{
 			using V = typename T::value_type;
 
 			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::inserter(json_collection, json_collection.begin()), [&pushError](const V& elem)
+			std::transform(obj.begin(), obj.end(), std::inserter(json_collection, json_collection.begin()), [&pushError](V elem)
 				{
 					return DefaultSerialize(elem, pushError);
 				});
@@ -38,7 +38,7 @@ struct SetSerializer
 	}
 
 	template<typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, const std::function<void(JSerError)>& pushError) const
+	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
 
