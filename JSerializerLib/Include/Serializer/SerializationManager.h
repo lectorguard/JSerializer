@@ -133,6 +133,8 @@ static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError)
 {
 	using CurrentType = std::remove_reference<T>::type;
 
+	static_assert(std::is_default_constructible_v<T>, "Every type passed to JSerializer must have default constructor");
+
 	if constexpr (IsHandledByJSER<CurrentType>())
 	{
 		if (std::optional<T> obj = DeserializeByJSER<T>(j, pushError))
