@@ -51,13 +51,17 @@ namespace Collections_Test
 
             struct CollectionTest : JSerializable
             {
-                CollectionTest() 
-                { 
-                    JSER_ADD(foo, foo_list, foo_vector ,foo_forward_list ,foo_set, foo_multi_set);
-                    JSER_ADD(foo_valarry, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset);
-                    JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple, foo_bitset);
-                    JSER_ADD(foo_stack, foo_queue, foo_priority_queue);
-                }
+                CollectionTest() { }
+
+				JserChunkAppender AddItem() override
+				{
+					return JSerializable::AddItem()
+                        .Append(JSER_ADD(foo, foo_list, foo_vector, foo_forward_list, foo_set, foo_multi_set))
+                        .Append(JSER_ADD(foo_valarry, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset))
+                        .Append(JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple, foo_bitset))
+                        .Append(JSER_ADD(foo_stack, foo_queue, foo_priority_queue));
+				}
+
                 std::array<int, 3> foo = { 0,0,0 };
                 std::list<int> foo_list = { 45,48,513,8,61,86,156 };
 				std::vector<double> foo_vector = { 16561.4681,168.168,416811.68186,4648.864 };

@@ -23,9 +23,11 @@ namespace Error_Test
 		{
 			struct Foo : JSerializable
 			{
-				Foo()
+				Foo(){}
+
+				JserChunkAppender AddItem() override
 				{
-					JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int);
+					return JSerializable::AddItem().Append(JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int));
 				}
 
 				bool foo_bool = false;
@@ -135,7 +137,13 @@ namespace Error_Test
 				
 				struct FooZ : JSerializable
 				{
-					FooZ() { JSER_ADD(foo, foo_objx); };
+					FooZ() { };
+
+					JserChunkAppender AddItem() override
+					{
+						return JSerializable::AddItem().Append(JSER_ADD(foo, foo_objx));
+					}
+
 					int foo = 25;
 					FooY foo_objx;
 				};

@@ -13,8 +13,12 @@ namespace Inheritance_Test
     {
         Foo()
         {
-            JSER_ADD(foo);
         };
+
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo));
+		}
         uint32_t foo = 9;
     };
     
@@ -22,8 +26,12 @@ namespace Inheritance_Test
     {
         Foo1()
         {
-            JSER_ADD(foo1);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return Foo::AddItem().Append(JSER_ADD(foo1));
+		}
         uint32_t foo1 = 76543;
     };
     
@@ -31,8 +39,13 @@ namespace Inheritance_Test
     {
         Foo2()
         {
-            JSER_ADD(foo2);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return Foo1::AddItem().Append(JSER_ADD(foo2));
+		}
+
         uint32_t foo2 = 5678;
     };
     
@@ -40,8 +53,12 @@ namespace Inheritance_Test
     {
         Foo3()
         {
-            JSER_ADD(foo3);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return Foo2::AddItem().Append(JSER_ADD(foo3));
+		}
         uint32_t foo3 = 782;
     }; 
     
@@ -49,8 +66,12 @@ namespace Inheritance_Test
     {
         Foo4()
         {
-            JSER_ADD(foo4);
         }
+		JserChunkAppender AddItem() override
+		{
+			return Foo3::AddItem().Append(JSER_ADD(foo4));
+		}
+
         uint32_t foo4 = 4526;
     }; 
     
@@ -58,8 +79,12 @@ namespace Inheritance_Test
     {
         Foo5()
         {
-            JSER_ADD(foo5);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return Foo4::AddItem().Append(JSER_ADD(foo5));
+		}
         uint32_t foo5 = 78978;
     };
     
@@ -67,8 +92,12 @@ namespace Inheritance_Test
     {
         Foo6()
         {
-            JSER_ADD(foo6);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return Foo5::AddItem().Append(JSER_ADD(foo6));
+		}
         uint32_t foo6 = 6584;
     };
     
@@ -76,26 +105,33 @@ namespace Inheritance_Test
     {
         Foo7()
         {
-            JSER_ADD(foo7);
         }
+		JserChunkAppender AddItem() override
+		{
+			return Foo6::AddItem().Append(JSER_ADD(foo7));
+		}
+
         uint32_t foo7 = 99;
     }; 
     
     struct Foo8 : Foo7
     {
-        Foo8()
-        {
-            JSER_ADD(foo8);
-        }
+        Foo8(){}
+		JserChunkAppender AddItem() override
+		{
+			return Foo7::AddItem().Append(JSER_ADD(foo8));
+		}
+
         uint32_t foo8 = 11;
     }; 
     
     struct Foo9 : Foo8
     {
-        Foo9()
-        {
-            JSER_ADD(foo9);
-        }
+        Foo9(){}
+		JserChunkAppender AddItem() override
+		{
+			return Foo8::AddItem().Append(JSER_ADD(foo9));
+		}
         uint32_t foo9 = 47;
     }; 
     
@@ -103,8 +139,11 @@ namespace Inheritance_Test
     {
         Foo10()
         {
-            JSER_ADD(foo10);
         }
+		JserChunkAppender AddItem() override
+		{
+			return Foo9::AddItem().Append(JSER_ADD(foo10));
+		}
         uint32_t foo10 = 52;
     
         void compare(const Foo10& Rhs)
@@ -138,8 +177,12 @@ namespace Inheritance_Test
     {
         Boo2()
         {
-            JSER_ADD(boo, boo1, boo2);
         }
+		JserChunkAppender AddItem() override
+		{
+			return Boo1::AddItem().Append(JSER_ADD(boo, boo1, boo2));
+		}
+
         uint32_t boo2 = 7;
 
 
@@ -159,6 +202,7 @@ namespace Inheritance_Test
         "inheritance"_test = [] 
         {
             Foo10 foo;
+            foo.foo += 4;
             std::list<JSerError> errorList;
             std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization for inherited object throws error";

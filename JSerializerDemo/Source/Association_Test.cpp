@@ -7,11 +7,12 @@ namespace Association_Test
 
     struct Foo : JSerializable
     {
-    
-        Foo()
-        {
-            JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int);
-        }
+        Foo(){}
+
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int));
+		}
     
         bool foo_bool = false;
         short int foo_short_int = 9;
@@ -32,8 +33,12 @@ namespace Association_Test
     {
         Foo0()
         {
-            JSER_ADD(foo);
         }
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo));
+		}
+
         Foo foo;
     };
     
@@ -41,8 +46,12 @@ namespace Association_Test
     {
         Foo1()
         {
-            JSER_ADD(foo);
         }
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo));
+		}
+        
         Foo0 foo;
     };
     
@@ -50,8 +59,12 @@ namespace Association_Test
     {
         Foo2()
         {
-            JSER_ADD(foo);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo));
+		}
         Foo1 foo;
     };
     
@@ -59,8 +72,11 @@ namespace Association_Test
     {
         Foo3()
         {
-            JSER_ADD(foo);
         }
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo));
+		}
         Foo2 foo;
     };
     
@@ -68,8 +84,11 @@ namespace Association_Test
     {
         Foo4()
         {
-            JSER_ADD(foo);
         }
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo));
+		}
         Foo3 foo;
     };
 

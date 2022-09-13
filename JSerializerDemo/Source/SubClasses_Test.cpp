@@ -9,23 +9,47 @@ namespace SubClasses_Test
 {
     struct Foo : public JSerializable
     {
-        Foo() { JSER_ADD(foo, obj1, obj2, obj3); };
+        Foo() { };
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem().Append(JSER_ADD(foo, obj1, obj2, obj3));
+		}
+
 
         struct Foo1 : public JSerializable
         {
-            Foo1() { JSER_ADD(foo); };
+            Foo1() { };
+
+			JserChunkAppender AddItem() override
+			{
+				return JSerializable::AddItem().Append(JSER_ADD(foo));
+			}
 
             struct Foo2 : public JSerializable
             {
-                Foo2() { JSER_ADD(foo); };
+                Foo2() {  };
+
+				JserChunkAppender AddItem() override
+				{
+					return JSerializable::AddItem().Append(JSER_ADD(foo));
+				}
 
                 struct Foo3 : public JSerializable
                 {
-                    Foo3() { JSER_ADD(foo, obj4); };
+                    Foo3() {  };
+					JserChunkAppender AddItem() override
+					{
+						return JSerializable::AddItem().Append(JSER_ADD(foo, obj4));
+					}
 
                     struct Foo4 : public JSerializable
                     {
-                        Foo4() { JSER_ADD(foo); };
+                        Foo4() { };
+						JserChunkAppender AddItem() override
+						{
+							return JSerializable::AddItem().Append(JSER_ADD(foo));
+						}
+
                         int32_t foo = 5;
                     };
                     Foo4 obj4;

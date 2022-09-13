@@ -18,10 +18,16 @@ namespace PrimitiveDatatypes_Test
     
         Foo()
         {
-            JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int, foo_int);
-            JSER_ADD(foo_long_int, foo_u_long_int, foo_long_long_int, foo_u_long_long_int, foo_signed_char);
-            JSER_ADD(foo_unsigned_char, foo_float, foo_double, foo_long_double, foo_wchar, foo_enum);
         }
+
+		JserChunkAppender AddItem() override
+		{
+			return JSerializable::AddItem()
+                .Append(JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int, foo_int))
+                .Append(JSER_ADD(foo_long_int, foo_u_long_int, foo_long_long_int, foo_u_long_long_int, foo_signed_char))
+                .Append(JSER_ADD(foo_unsigned_char, foo_float, foo_double, foo_long_double, foo_wchar, foo_enum));
+		}
+
     
         bool foo_bool = false;
         short int foo_short_int = 9;
@@ -67,6 +73,7 @@ namespace PrimitiveDatatypes_Test
 
         "primitive data types"_test = [] {
             Foo foo;
+            foo.foo_bool = true;
             std::list<JSerError> errorList;
             std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
             expect(errorList.size() == 0) << "Serialization of primitives throws error";

@@ -30,7 +30,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD_ELEMENT(foo_int));
+			return JSerializable::AddItem().Append(JSER_ADD(foo_int));
 		}
 
 	};
@@ -49,7 +49,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD_ELEMENT(foo_set));
+			return JSerializable::AddItem().Append(JSER_ADD(foo_set));
 		}
 
 	};
@@ -63,7 +63,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD_ELEMENT(foo_set_arr, foo_nested_collections));
+			return JSerializable::AddItem().Append(JSER_ADD(foo_set_arr, foo_nested_collections));
 		}
 
 	};
@@ -100,35 +100,34 @@ namespace Stacked_Collections
 			std::string result = test.SerializeObjectString(std::back_inserter(errorList));
 			expect(errorList.size() == 0) << "Serialization of primitives throws error";
 			
-			std::cout << result << std::endl;
 			Test deserialized;
 			deserialized.DeserializeObject(result, std::back_inserter(errorList));
 			expect(errorList.size() == 0) << "Deserialization of primitives throws error";
 
 
 
-			//for (const auto& [key, value] : test.foo_nested_collections)
-			//{
-			//	bool result = std::equal(test.foo_nested_collections[key].begin(), test.foo_nested_collections[key].end(), deserialized.foo_nested_collections[key].begin(),
-			//		[](auto lhs, auto rhs)
-			//		{
-			//			while (!lhs.empty())
-			//			{
-			//				if (lhs.top().foo_int != rhs.top().foo_int) return false;
-			//				lhs.pop();
-			//				rhs.pop();
-			//			}
-			//			return true;
-			//		});
-			//	expect(result);
-			//}
-			//
-			//
-			//bool foo_set_result = std::equal(test.foo_set_arr.begin(), test.foo_set_arr.end(), deserialized.foo_set_arr.begin(), [](FooSet Rhs, FooSet Lhs)
-			//	{
-			//		return Rhs.foo_set == Lhs.foo_set;
-			//	});
-			//expect(foo_set_result);
+			for (const auto& [key, value] : test.foo_nested_collections)
+			{
+				bool result = std::equal(test.foo_nested_collections[key].begin(), test.foo_nested_collections[key].end(), deserialized.foo_nested_collections[key].begin(),
+					[](auto lhs, auto rhs)
+					{
+						while (!lhs.empty())
+						{
+							if (lhs.top().foo_int != rhs.top().foo_int) return false;
+							lhs.pop();
+							rhs.pop();
+						}
+						return true;
+					});
+				expect(result);
+			}
+
+
+			bool foo_set_result = std::equal(test.foo_set_arr.begin(), test.foo_set_arr.end(), deserialized.foo_set_arr.begin(), [](FooSet Rhs, FooSet Lhs)
+				{
+					return Rhs.foo_set == Lhs.foo_set;
+				});
+			expect(foo_set_result);
 
 
 		};

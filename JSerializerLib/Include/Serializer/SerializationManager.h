@@ -105,6 +105,7 @@ inline constexpr bool IsHandledByJSER()
 	return serializable;
 }
 
+// Elem can not be const ref, because T could be another JSerializer. In that case we could only call const functions, but AddItem() can not be const. (Called during deserialization)
 template<typename T>
 static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
 {

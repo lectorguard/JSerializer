@@ -40,6 +40,7 @@ struct JSerializable {
 
     virtual ~JSerializable() = default;
 
+    // Can not be const because Serialize and Deserialize need to call this function, deserialization process is not a const process. 
     virtual JserChunkAppender AddItem() { return JserChunkAppender(); };
 
     template<JSerErrorCompatible T>
@@ -87,30 +88,6 @@ struct JSerializable {
         Validation.push_back(validationFunction);
     }
 
-    template<typename...O>
-    constexpr void AddDefaultSerializeItem(const std::vector<std::string>& names, O&& ... objects)
-    {
-        assert(names.size() == sizeof...(objects) && " for each name there must be a parameter");
-
-        DefaultSerializeChunks.push_back({
-            names,
-            [tup = std::forward_as_tuple(objects...)](nlohmann::json& j, const std::vector<std::string>& parameterNames,  PushErrorType pushError)
-            {
-                std::apply([&parameterNames,&j, &pushError](auto &&... args)
-                    {
-                        Serialize(j, parameterNames, pushError, args...);
-                    }, tup);
-            },
-            [tup = std::forward_as_tuple(objects...),this](nlohmann::json j, const std::vector<std::string>& parameterNames,  PushErrorType pushError) mutable
-            {
-                std::apply([&parameterNames, &j, &pushError](auto &&... args)
-                    {
-                        Deserialize(j, parameterNames, pushError, args...);
-                    }, tup);
-            }
-            });
-    };
-
 	template<typename...O>
 	constexpr DefaultSerializeItem CreateSerializeItem(const std::vector<std::string>& names, O&& ... objects)
 	{
@@ -156,27 +133,17 @@ private:
     nlohmann::json SerializeObject_Internal(PushErrorType pushError) 
     {
         executeValidation();
+        std::vector<DefaultSerializeItem> DefaultSerializeChunks = AddItem().GetItems();
+		if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
+		{
+			pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling SerializeObject. " });
+		}
 
-        std::vector<DefaultSerializeItem> elements = AddItem().GetItems();
-        if (elements.size() > 0)
-        {
-            nlohmann::json j;
-			for (DefaultSerializeItem& item : elements)
-			{
-				item.SerializeCB(j, item.ParameterNames, pushError);
-			}
-            return j;
-        }
-
-        if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
-        {
-            pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name())+ ", before calling SerializeObject. "});
-        }
-        nlohmann::json j;
-        for (DefaultSerializeItem& item : DefaultSerializeChunks)
-        {
-            item.SerializeCB(j,item.ParameterNames, pushError);
-        }
+		nlohmann::json j;
+		for (DefaultSerializeItem& item : DefaultSerializeChunks)
+		{
+			item.SerializeCB(j, item.ParameterNames, pushError);
+		}
         for (CustomSerializeItem& item : CustomSerializeChunks)
         {
             item.SerializeCB(j, pushError);
@@ -186,24 +153,15 @@ private:
 
     void DeserializeObject_Internal(nlohmann::json j, PushErrorType pushError)
     {
-		std::vector<DefaultSerializeItem> elements = AddItem().GetItems();
-		if (elements.size() > 0)
+		std::vector<DefaultSerializeItem> DefaultSerializeChunks = AddItem().GetItems();
+		if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
 		{
-			for (DefaultSerializeItem& item : elements)
-			{
-				item.DeserializeCB(j, item.ParameterNames, pushError);
-			}
-			return;
+			pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling DeserializeObject." });
 		}
-
-        if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
-        {
-            pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling DeserializeObject."});
-        }
-        for (DefaultSerializeItem& item : DefaultSerializeChunks)
-        {
-            item.DeserializeCB(j, item.ParameterNames, pushError);
-        }
+		for (DefaultSerializeItem& item : DefaultSerializeChunks)
+		{
+			item.DeserializeCB(j, item.ParameterNames, pushError);
+		}
         for (CustomSerializeItem& item : CustomSerializeChunks)
         {
             item.DeserializeCB(j, pushError);
@@ -259,7 +217,6 @@ private:
     }
 
     std::vector<CustomSerializeItem> CustomSerializeChunks = {};
-    std::vector<DefaultSerializeItem> DefaultSerializeChunks = {};
     std::vector<std::function<void()>> Validation = {};
 
     friend struct PolymorphicSerializer;

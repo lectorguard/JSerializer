@@ -5,6 +5,8 @@
 #include <vector>
 #include <functional>
 
+// TO DO , write new system similar to the default serializer
+
 namespace CustomSerialization_Test
 {
     struct Foo : JSerializable
