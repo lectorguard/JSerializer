@@ -62,7 +62,7 @@ inline static constexpr const std::array<SerializerType, 11> SerializationBehavi
 };
 
 template<typename T>
-constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, std::function<void(JSerError)>& pushError)
+constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError)
 {
 	static_assert(!std::is_const_v<T>, "Function ptr are used which are not following cost correctness, so no const value can be passed here");
 
@@ -80,7 +80,7 @@ constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, std::function<v
 }
 
 template<typename T>
-constexpr std::optional<T> DeserializeByJSER(const nlohmann::json& j, std::function<void(JSerError)>& pushError)
+constexpr std::optional<T> DeserializeByJSER(const nlohmann::json& j, PushErrorType pushError)
 {
 	for (const auto& elem : SerializationBehavior)
 	{
@@ -106,7 +106,7 @@ inline constexpr bool IsHandledByJSER()
 }
 
 template<typename T>
-static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError)
+static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
 {
 	using CurrentType = std::remove_reference<decltype(elem)>::type;
 
@@ -128,7 +128,7 @@ static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>&
 }
 
 template<typename T>
-static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError)
+static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError)
 {
 	using CurrentType = std::remove_reference<T>::type;
 

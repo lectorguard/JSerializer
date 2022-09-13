@@ -6,8 +6,8 @@
 #include <set>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(T&& elem, std::function<void(JSerError)>& pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError);
+template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
+template<typename T> static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
 
 struct SetSerializer
 {
@@ -21,7 +21,7 @@ struct SetSerializer
 	}
 
 	template<typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, std::function<void(JSerError)>& pushError) const
+	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
 		{
@@ -38,7 +38,7 @@ struct SetSerializer
 	}
 
 	template<typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, std::function<void(JSerError)>& pushError) const
+	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
 
