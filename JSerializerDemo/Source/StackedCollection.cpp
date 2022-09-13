@@ -24,14 +24,15 @@ namespace Stacked_Collections
 	struct Foo0 : JSerializable
 	{
 		int16_t foo_int = 44;
-		Foo0(int16_t _int) : foo_int(_int)
+
+		Foo0() {};
+		Foo0(int foo): foo_int(foo){}
+
+		JserChunkAppender AddItem() override
 		{
-			JSER_ADD(foo_int);
+			return JSerializable::AddItem().Append(JSER_ADD_ELEMENT(foo_int));
 		}
-		Foo0()
-		{
-			JSER_ADD(foo_int);
-		}
+
 	};
 
 	struct FooSet : JSerializable
@@ -42,23 +43,29 @@ namespace Stacked_Collections
 			foo_set.emplace(fst);
 			foo_set.emplace(snd);
 			foo_set.emplace(trd);
-			JSER_ADD(foo_set);
 		}
-		FooSet()
+
+		FooSet(){}
+
+		JserChunkAppender AddItem() override
 		{
-			JSER_ADD(foo_set);
+			return JSerializable::AddItem().Append(JSER_ADD_ELEMENT(foo_set));
 		}
+
 	};
 
 	struct Test : JSerializable
 	{
 		std::map<std::string, std::vector<std::stack<Foo0>>> foo_nested_collections;
 		std::array<FooSet, 3> foo_set_arr;
+	
+		Test() {};
 
-		Test()
+		JserChunkAppender AddItem() override
 		{
-			JSER_ADD(foo_nested_collections, foo_set_arr);
+			return JSerializable::AddItem().Append(JSER_ADD_ELEMENT(foo_set_arr, foo_nested_collections));
 		}
+
 	};
 
 
@@ -89,14 +96,14 @@ namespace Stacked_Collections
 			test.foo_nested_collections = { {"hello", {foo_stack, foo_stack}}, {"world", {copied_stack, copied_stack}} };
 
 
-			//std::list<JSerError> errorList;
-			//std::string result = test.SerializeObjectString(std::back_inserter(errorList));
-			//expect(errorList.size() == 0) << "Serialization of primitives throws error";
-			//
-			//std::cout << result << std::endl;
-			//Test deserialized;
-			//deserialized.DeserializeObject(result, std::back_inserter(errorList));
-			//expect(errorList.size() == 0) << "Deserialization of primitives throws error";
+			std::list<JSerError> errorList;
+			std::string result = test.SerializeObjectString(std::back_inserter(errorList));
+			expect(errorList.size() == 0) << "Serialization of primitives throws error";
+			
+			std::cout << result << std::endl;
+			Test deserialized;
+			deserialized.DeserializeObject(result, std::back_inserter(errorList));
+			expect(errorList.size() == 0) << "Deserialization of primitives throws error";
 
 
 

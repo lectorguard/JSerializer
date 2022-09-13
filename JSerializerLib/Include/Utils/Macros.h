@@ -39,6 +39,8 @@
 // Helper function
 #define JSER_ADD(...) AddDefaultSerializeItem(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
 #define JSER_ADD_CUSTOM(SerializeCB,DeserializeCB)AddCustomSerializeItem(SerializeCB, DeserializeCB)
+#define JSER_ADD_ELEMENT(...) CreateSerializeItem(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
+
 #define JSER_ADD_VAL(x) AddValidation([this]()x)
 
 
