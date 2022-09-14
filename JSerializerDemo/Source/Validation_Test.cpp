@@ -43,18 +43,23 @@ namespace Validation_Test
 
                 }
                 );
-            JSER_ADD_VAL(
-                {
-                    using namespace boost::ut;
-                    expect(foo_stack.size() == pushed_elements.size()) << "Sizes are not equal";
-                    const std::deque<float> deque_casted = foo_stack._Get_container();
-                    for (size_t i = 0; i < deque_casted.size(); ++i)
-                    {
-                        expect(deque_casted[i] == pushed_elements[i]) << "Elements in deque and vector are not identical";
-                    }
-                }
-            );
         }
+
+        void Validate(JSerEvent jser_event, PushErrorType push_error) override
+        {
+            using namespace boost::ut;
+            if (foo_stack.size() != pushed_elements.size())
+            {
+				push_error({ JSerErrorTypes::VALIDATION_ERROR, "Check if validation errors are working" });
+				return;
+            }
+			const std::deque<float> deque_casted = foo_stack._Get_container();
+			for (size_t i = 0; i < deque_casted.size(); ++i)
+			{
+				expect(deque_casted[i] == pushed_elements[i]) << "Elements in deque and vector are not identical";
+			}
+        }
+
     };
 
     boost::ut::suite Association_Test = [] {
@@ -62,13 +67,17 @@ namespace Validation_Test
         "validation"_test = [] 
         {
             Foo foo;
+            foo.foo_stack.push(156.0f);
             std::list<JSerError> errorList;
             std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
-            expect(errorList.size() == 0) << "Serialization of many object associations throws error";
+            expect(errorList.size() == 1) << "There should be one validation error";
+            expect(errorList.front().Error == JSerErrorTypes::VALIDATION_ERROR);
 
+            errorList.clear();
             Foo deserialized;
             deserialized.DeserializeObject(result, std::back_inserter(errorList));
-            expect(errorList.size() == 0) << "Deserialization of many object associations throws error";
+			expect(errorList.size() == 1) << "There should be one validation error";
+			expect(errorList.front().Error == JSerErrorTypes::VALIDATION_ERROR);
         };
 
 		"validation from string"_test = []

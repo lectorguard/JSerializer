@@ -30,6 +30,13 @@ enum class JSerErrorTypes
 	MEMBER_ERROR,					// Failed deserializing member variable
 	POLYMORPHIC_ERROR,				// Object is polymorphic but it does not inherit from JSerializable
 	DEFAULT_SERIALIZATION_ERROR,	// Error was returned during default serialization process
+	VALIDATION_ERROR,				// Custom error which can be called from user during validation process
+};
+
+enum class JSerEvent
+{
+	BEFORE_SERIALIZATION,
+	AFTER_DESERIALIZATION
 };
 
 struct JSerError

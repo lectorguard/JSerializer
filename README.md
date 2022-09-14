@@ -1,3 +1,4 @@
+
 # Json Serializer for C++
 
 Simple to use json serializer for c++
@@ -12,18 +13,19 @@ Simple to use json serializer for c++
 	- Validation test // DONE
 	- Error type test -> Also error for pointer and circular dependencies // DONE
 	- Pointer test
+	- Rewrite Validation // DONE
 - Add support for the following collections
-    - stack
-    - queue
-    - priority queue
-    - multimap
-    - unordered multimap 
-    - bitset
-    - Any container could be filled with polymorph objects
-    - test map of array of something else of ....
-    - Bessere test schreiben lul
+    - stack DONE
+    - queue DONE
+    - priority queue DONE
+    - multimap DONE
+    - unordered multimap DONE 
+    - bitset DONE
+    - Any container could be filled with polymorph objects DONE
+    - test map of array of something else of .... DONE
+    - Bessere test schreiben lul DONE 
     - Füge korrekte typ identifikationstest hinzu
-    - Bringe const für serialization zurück
+    - Überarbeite custom serialization, sodass custom types standardmäßig deserialisiert werden können
 - Create namespace around the library
 - Write docs inside this readme 
 

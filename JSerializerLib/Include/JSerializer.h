@@ -43,6 +43,9 @@ struct JSerializable {
     // Can not be const because Serialize and Deserialize need to call this function, deserialization process is not a const process. 
     virtual JserChunkAppender AddItem() { return JserChunkAppender(); };
 
+    // Validation function is called before serialization and after deserialization is finished
+    virtual void Validate(JSerEvent jser_event, PushErrorType push_error) {};
+
     template<JSerErrorCompatible T>
     std::string SerializeObjectString(std::back_insert_iterator<T> error)
     {
@@ -122,17 +125,9 @@ struct JSerializable {
     }
 
 private:
-    constexpr void executeValidation() 
-    {
-        for (const std::function<void()>& func : Validation)
-        {
-            func();
-        }
-    }
-
     nlohmann::json SerializeObject_Internal(PushErrorType pushError) 
     {
-        executeValidation();
+        Validate(JSerEvent::BEFORE_SERIALIZATION, pushError);
         std::vector<DefaultSerializeItem> DefaultSerializeChunks = AddItem().GetItems();
 		if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
 		{
@@ -166,7 +161,7 @@ private:
         {
             item.DeserializeCB(j, pushError);
         }
-        executeValidation();
+        Validate(JSerEvent::AFTER_DESERIALIZATION, pushError);
     }
 
     template <int I, class... Ts>

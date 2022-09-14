@@ -39,7 +39,6 @@
 // Helper function
 #define JSER_ADD(...) CreateSerializeItem(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
 #define JSER_ADD_CUSTOM(SerializeCB,DeserializeCB)AddCustomSerializeItem(SerializeCB, DeserializeCB)
-#define JSER_ADD_VAL(x) AddValidation([this]()x)
 
 
 #define DEFAULT_SERIALIZE_DEFINITION template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
