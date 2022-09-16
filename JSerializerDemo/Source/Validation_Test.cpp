@@ -6,7 +6,7 @@
 
 namespace Validation_Test
 {
-
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
     struct Foo : JSerializable
     {
         std::stack<float> foo_stack;

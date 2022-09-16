@@ -26,6 +26,7 @@
 
 namespace Collections_Test
 {
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
 
     boost::ut::suite Collections_Test = [] {
         using namespace boost::ut;
@@ -56,10 +57,10 @@ namespace Collections_Test
 				JserChunkAppender AddItem() override
 				{
 					return JSerializable::AddItem()
-                        .Append(JSER_ADD(foo, foo_list, foo_vector, foo_forward_list, foo_set, foo_multi_set))
-                        .Append(JSER_ADD(foo_valarry, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset))
-                        .Append(JSER_ADD(foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple, foo_bitset))
-                        .Append(JSER_ADD(foo_stack, foo_queue, foo_priority_queue));
+                        .Append(JSER_ADD(JSERManager, foo, foo_list, foo_vector, foo_forward_list, foo_set, foo_multi_set))
+                        .Append(JSER_ADD(JSERManager, foo_valarry, foo_deque, foo_forward_list, foo_unordered_set, foo_unordered_multiset))
+                        .Append(JSER_ADD(JSERManager, foo_map, foo_unordered_map, foo_multimap, foo_unordered_multimap, foo_tuple, foo_bitset))
+                        .Append(JSER_ADD(JSERManager, foo_stack, foo_queue, foo_priority_queue));
 				}
 
                 std::array<int, 3> foo = { 0,0,0 };

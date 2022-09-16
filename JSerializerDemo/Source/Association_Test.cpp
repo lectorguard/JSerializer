@@ -2,8 +2,11 @@
 #include "boost/ut.hpp"
 #include "JSerializer.h"
 
+
+
 namespace Association_Test
 {
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
 
     struct Foo : JSerializable
     {
@@ -11,7 +14,7 @@ namespace Association_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_bool, foo_short_int, foo_u_short_int, foo_u_int));
 		}
     
         bool foo_bool = false;
@@ -36,7 +39,7 @@ namespace Association_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 		}
 
         Foo foo;
@@ -49,7 +52,7 @@ namespace Association_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 		}
         
         Foo0 foo;
@@ -63,7 +66,7 @@ namespace Association_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 		}
         Foo1 foo;
     };
@@ -75,7 +78,7 @@ namespace Association_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager,  foo));
 		}
         Foo2 foo;
     };
@@ -87,7 +90,7 @@ namespace Association_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 		}
         Foo3 foo;
     };

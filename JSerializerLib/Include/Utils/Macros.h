@@ -39,7 +39,7 @@
 #define CLOSE_BRACKET }
 // Helper function
 #define JSER_ADD(managerType, ...) CreateSerializeItem<managerType>(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
-//#define JSER_ADD_CUSTOM(SerializeCB,DeserializeCB)AddCustomSerializeItem(SerializeCB, DeserializeCB)
+#define JSER_ADD_CUSTOM(SerializeCB,DeserializeCB)AddCustomSerializeItem(SerializeCB, DeserializeCB)
 
 #define DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER ListVectorDequeSerializer ,PolymorphicSerializer, \
                                                 SetSerializer,ArraySerializer,ValarraySerializer, \

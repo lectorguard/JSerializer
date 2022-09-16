@@ -6,7 +6,7 @@
 
 namespace PrimitiveDatatypes_Test 
 {
-
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
     enum class FooEnum : uint8_t
     {
         FOO, FOO1, FOO2, FOO3, FOO4, FOO5, FOO6, FOO7, FOO8, FOO9,
@@ -23,9 +23,9 @@ namespace PrimitiveDatatypes_Test
 		JserChunkAppender AddItem() override
 		{
 			return JSerializable::AddItem()
-                .Append(JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int, foo_int))
-                .Append(JSER_ADD(foo_long_int, foo_u_long_int, foo_long_long_int, foo_u_long_long_int, foo_signed_char))
-                .Append(JSER_ADD(foo_unsigned_char, foo_float, foo_double, foo_long_double, foo_wchar, foo_enum));
+                .Append(JSER_ADD(JSERManager, foo_bool, foo_short_int, foo_u_short_int, foo_u_int, foo_int))
+                .Append(JSER_ADD(JSERManager, foo_long_int, foo_u_long_int, foo_long_long_int, foo_u_long_long_int, foo_signed_char))
+                .Append(JSER_ADD(JSERManager, foo_unsigned_char, foo_float, foo_double, foo_long_double, foo_wchar, foo_enum));
 		}
 
     

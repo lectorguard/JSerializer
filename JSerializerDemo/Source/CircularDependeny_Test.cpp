@@ -15,7 +15,7 @@ namespace CircularDependency_Test
     //{
     //    Foo()
     //    {
-    //        JSER_ADD(foo_int, foo1_obj);
+    //        JSER_ADD(JSERManager, foo_int, foo1_obj);
     //    }
     //
     //    int32_t foo_int = 15;
@@ -26,7 +26,7 @@ namespace CircularDependency_Test
     //{
     //    Foo1()
     //    {
-    //        JSER_ADD(foo1_int, foo_obj);
+    //        JSER_ADD(JSERManager, foo1_int, foo_obj);
     //    }
     //    
     //    int32_t foo1_int = 15;

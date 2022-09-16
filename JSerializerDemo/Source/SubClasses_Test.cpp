@@ -7,12 +7,13 @@
 
 namespace SubClasses_Test 
 {
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
     struct Foo : public JSerializable
     {
         Foo() { };
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo, obj1, obj2, obj3));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo, obj1, obj2, obj3));
 		}
 
 
@@ -22,7 +23,7 @@ namespace SubClasses_Test
 
 			JserChunkAppender AddItem() override
 			{
-				return JSerializable::AddItem().Append(JSER_ADD(foo));
+				return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 			}
 
             struct Foo2 : public JSerializable
@@ -31,7 +32,7 @@ namespace SubClasses_Test
 
 				JserChunkAppender AddItem() override
 				{
-					return JSerializable::AddItem().Append(JSER_ADD(foo));
+					return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 				}
 
                 struct Foo3 : public JSerializable
@@ -39,7 +40,7 @@ namespace SubClasses_Test
                     Foo3() {  };
 					JserChunkAppender AddItem() override
 					{
-						return JSerializable::AddItem().Append(JSER_ADD(foo, obj4));
+						return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo, obj4));
 					}
 
                     struct Foo4 : public JSerializable
@@ -47,7 +48,7 @@ namespace SubClasses_Test
                         Foo4() { };
 						JserChunkAppender AddItem() override
 						{
-							return JSerializable::AddItem().Append(JSER_ADD(foo));
+							return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 						}
 
                         int32_t foo = 5;

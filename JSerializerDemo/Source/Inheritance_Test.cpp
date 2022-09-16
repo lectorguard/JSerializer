@@ -8,7 +8,7 @@
 
 namespace Inheritance_Test 
 {
-
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
     struct Foo : JSerializable
     {
         Foo()
@@ -17,7 +17,7 @@ namespace Inheritance_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo));
 		}
         uint32_t foo = 9;
     };
@@ -30,7 +30,7 @@ namespace Inheritance_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return Foo::AddItem().Append(JSER_ADD(foo1));
+			return Foo::AddItem().Append(JSER_ADD(JSERManager, foo1));
 		}
         uint32_t foo1 = 76543;
     };
@@ -43,7 +43,7 @@ namespace Inheritance_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return Foo1::AddItem().Append(JSER_ADD(foo2));
+			return Foo1::AddItem().Append(JSER_ADD(JSERManager, foo2));
 		}
 
         uint32_t foo2 = 5678;
@@ -57,7 +57,7 @@ namespace Inheritance_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return Foo2::AddItem().Append(JSER_ADD(foo3));
+			return Foo2::AddItem().Append(JSER_ADD(JSERManager, foo3));
 		}
         uint32_t foo3 = 782;
     }; 
@@ -69,7 +69,7 @@ namespace Inheritance_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return Foo3::AddItem().Append(JSER_ADD(foo4));
+			return Foo3::AddItem().Append(JSER_ADD(JSERManager, foo4));
 		}
 
         uint32_t foo4 = 4526;
@@ -83,7 +83,7 @@ namespace Inheritance_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return Foo4::AddItem().Append(JSER_ADD(foo5));
+			return Foo4::AddItem().Append(JSER_ADD(JSERManager, foo5));
 		}
         uint32_t foo5 = 78978;
     };
@@ -96,7 +96,7 @@ namespace Inheritance_Test
 
 		JserChunkAppender AddItem() override
 		{
-			return Foo5::AddItem().Append(JSER_ADD(foo6));
+			return Foo5::AddItem().Append(JSER_ADD(JSERManager, foo6));
 		}
         uint32_t foo6 = 6584;
     };
@@ -108,7 +108,7 @@ namespace Inheritance_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return Foo6::AddItem().Append(JSER_ADD(foo7));
+			return Foo6::AddItem().Append(JSER_ADD(JSERManager, foo7));
 		}
 
         uint32_t foo7 = 99;
@@ -119,7 +119,7 @@ namespace Inheritance_Test
         Foo8(){}
 		JserChunkAppender AddItem() override
 		{
-			return Foo7::AddItem().Append(JSER_ADD(foo8));
+			return Foo7::AddItem().Append(JSER_ADD(JSERManager, foo8));
 		}
 
         uint32_t foo8 = 11;
@@ -130,7 +130,7 @@ namespace Inheritance_Test
         Foo9(){}
 		JserChunkAppender AddItem() override
 		{
-			return Foo8::AddItem().Append(JSER_ADD(foo9));
+			return Foo8::AddItem().Append(JSER_ADD(JSERManager, foo9));
 		}
         uint32_t foo9 = 47;
     }; 
@@ -142,7 +142,7 @@ namespace Inheritance_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return Foo9::AddItem().Append(JSER_ADD(foo10));
+			return Foo9::AddItem().Append(JSER_ADD(JSERManager, foo10));
 		}
         uint32_t foo10 = 52;
     
@@ -180,7 +180,7 @@ namespace Inheritance_Test
         }
 		JserChunkAppender AddItem() override
 		{
-			return Boo1::AddItem().Append(JSER_ADD(boo, boo1, boo2));
+			return Boo1::AddItem().Append(JSER_ADD(JSERManager, boo, boo1, boo2));
 		}
 
         uint32_t boo2 = 7;

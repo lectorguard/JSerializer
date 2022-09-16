@@ -7,6 +7,7 @@
 
 namespace Error_Test
 {
+	CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
 
 	template<typename Test, template<typename...> class Ref>
 	struct is_specialization_v : std::false_type {};
@@ -27,7 +28,7 @@ namespace Error_Test
 
 				JserChunkAppender AddItem() override
 				{
-					return JSerializable::AddItem().Append(JSER_ADD(foo_bool, foo_short_int, foo_u_short_int, foo_u_int));
+					return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_bool, foo_short_int, foo_u_short_int, foo_u_int));
 				}
 
 				bool foo_bool = false;
@@ -109,7 +110,7 @@ namespace Error_Test
 // 				
 // 				struct FooY : JSerializable
 // 				{
-// 					FooY() { JSER_ADD(foo, foo_objx); };
+// 					FooY() { JSER_ADD(JSERManager, foo, foo_objx); };
 // 					int foo = 25;
 // 					FooX foo_objx;
 // 				};
@@ -141,7 +142,7 @@ namespace Error_Test
 
 					JserChunkAppender AddItem() override
 					{
-						return JSerializable::AddItem().Append(JSER_ADD(foo, foo_objx));
+						return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo, foo_objx));
 					}
 
 					int foo = 25;

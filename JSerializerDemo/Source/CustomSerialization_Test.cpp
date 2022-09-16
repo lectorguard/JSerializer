@@ -9,6 +9,7 @@
 
 namespace CustomSerialization_Test
 {
+    CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
     struct Foo : JSerializable
     {
         std::vector<uint64_t> foo = {15,56656565,498,48};

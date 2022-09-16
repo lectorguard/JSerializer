@@ -20,7 +20,7 @@
 
 namespace Stacked_Collections
 {
-
+	CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
 	struct Foo0 : JSerializable
 	{
 		int16_t foo_int = 44;
@@ -30,7 +30,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo_int));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_int));
 		}
 
 	};
@@ -44,7 +44,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo_bitset));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_bitset));
 		}
 	};
 
@@ -62,7 +62,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo_set));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_set));
 		}
 
 	};
@@ -87,7 +87,7 @@ namespace Stacked_Collections
 
 		JserChunkAppender AddItem() override
 		{
-			return JSerializable::AddItem().Append(JSER_ADD(foo_set_arr, foo_nested_collections, foo_valarray, foo_deque, foo_queue, foo_list));
+			return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_set_arr, foo_nested_collections, foo_valarray, foo_deque, foo_queue, foo_list));
 		}
 
 	};
