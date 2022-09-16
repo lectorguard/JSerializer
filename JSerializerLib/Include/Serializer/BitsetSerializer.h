@@ -5,9 +5,6 @@
 #include <optional>
 #include <bitset>
 
-template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
-
 struct BitsetSerializer
 {
 	template<typename Type>
@@ -16,7 +13,7 @@ struct BitsetSerializer
 		return is_bitset<Type>();
 	}
 
-	template<typename T>
+	template<typename M, typename T>
 	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
@@ -26,7 +23,7 @@ struct BitsetSerializer
 		return std::nullopt;
 	}
 
-	template<typename T>
+	template<typename M, typename T>
 	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;

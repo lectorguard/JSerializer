@@ -32,46 +32,17 @@
 #include "variant"
 
 
-
-using SerializerType = std::variant<
-	ListVectorDequeSerializer, 
-	PolymorphicSerializer,
-	SetSerializer,
-	ArraySerializer,
-	ValarraySerializer,
-	ForwardListSerializer,
-	MapSerializer,
-	TupleSerializer,
-	BitsetSerializer,
-	StackAndQueueSerializer,
-	PriorityQueueSerializer>;
-
-inline static constexpr const std::array<SerializerType, 11> SerializationBehavior =
-{
-	ListVectorDequeSerializer(),
-	PolymorphicSerializer(),
-	SetSerializer(),
-	ArraySerializer(),
-	ValarraySerializer(),
-	ForwardListSerializer(),
-	MapSerializer(),
-	TupleSerializer(),
-	BitsetSerializer(),
-	StackAndQueueSerializer(),
-	PriorityQueueSerializer(),
-};
-
-template<typename T>
-constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError)
+template<typename M, typename T>
+inline static constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError)
 {
 	static_assert(!std::is_const_v<T>, "Function ptr are used which are not following cost correctness, so no const value can be passed here");
 
-	for (const auto& elem : SerializationBehavior)
+	for (const auto& elem : CreateJSERArray<M>())
 	{
 		std::optional<nlohmann::json> j;
 		std::visit([&j, &obj, &pushError](auto x)
 			{
-				j = x.Serialize(obj, pushError);
+				j = x.Serialize<M>(obj, pushError);
 			},elem);
 		if (j) return j;
 	}
@@ -79,26 +50,28 @@ constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType p
 	
 }
 
-template<typename T>
-constexpr std::optional<T> DeserializeByJSER(const nlohmann::json& j, PushErrorType pushError)
+
+template<typename M, typename T>
+inline static constexpr std::optional<T> DeserializeByJSER(const nlohmann::json& j, PushErrorType pushError)
 {
-	for (const auto& elem : SerializationBehavior)
+	for (const auto& elem : CreateJSERArray<M>())
 	{
 		std::optional<T> obj;
 		std::visit([&obj, &j, &pushError](const auto& x) 
 			{
-				obj = x.Deserialize<T>(j, pushError); 
+				obj = x.Deserialize<M,T>(j, pushError); 
 			}, elem);
 		if (obj) return obj;
 	}
 	return std::nullopt;
 }
 
-template<typename T>
-inline constexpr bool IsHandledByJSER()
+
+template<typename M, typename T>
+inline static constexpr bool IsHandledByJSER()
 {
 	bool serializable = false;
-	for (auto elem : SerializationBehavior)
+	for (auto elem : CreateJSERArray<M>())
 	{
 		std::visit([&serializable](auto x) {serializable = serializable || x.IsCorrectType<T>(); }, elem);
 	}
@@ -106,14 +79,15 @@ inline constexpr bool IsHandledByJSER()
 }
 
 // Elem can not be const ref, because T could be another JSerializer. In that case we could only call const functions, but AddItem() can not be const. (Called during deserialization)
-template<typename T>
-static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
+
+template<typename M, typename T>
+inline static constexpr nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
 {
 	using CurrentType = std::remove_reference<decltype(elem)>::type;
 
-	if constexpr (IsHandledByJSER<CurrentType>())
+	if constexpr (IsHandledByJSER<M,CurrentType>())
 	{
-		if (std::optional<nlohmann::json> jser_json = SerializeByJSER(elem, pushError))
+		if (std::optional<nlohmann::json> jser_json = SerializeByJSER<M>(elem, pushError))
 		{
 			return *jser_json;
 		}
@@ -122,22 +96,21 @@ static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
 	}
 	else
 	{
-		nlohmann::json j;
-		j = elem;
-		return j;
+		return nlohmann::json(elem);
 	}
 }
 
-template<typename T>
-static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError)
+
+template<typename M, typename T>
+inline static constexpr T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError)
 {
 	using CurrentType = std::remove_reference<T>::type;
 
 	static_assert(std::is_default_constructible_v<T>, "Every type passed to JSerializer must have default constructor");
 
-	if constexpr (IsHandledByJSER<CurrentType>())
+	if constexpr (IsHandledByJSER<M, CurrentType>())
 	{
-		if (std::optional<T> obj = DeserializeByJSER<T>(j, pushError))
+		if (std::optional<T> obj = DeserializeByJSER<M,T>(j, pushError))
 		{
 			return *obj;
 		}

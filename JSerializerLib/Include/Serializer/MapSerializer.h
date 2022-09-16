@@ -6,9 +6,6 @@
 #include <map>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
-
 struct MapSerializer
 {
 	template<typename Type>
@@ -20,7 +17,7 @@ struct MapSerializer
  				is_specialization<Type, std::unordered_multimap>();
 	}
 
-	template<typename T>
+	template<typename M, typename T>
 	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
@@ -30,9 +27,12 @@ struct MapSerializer
 			nlohmann::json json_collection = nlohmann::json::array();
 			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](V elem)
 				{
+					auto json_array = nlohmann::json::array();
 					auto key_element = std::get<0>(elem);
 					auto value_element = std::get<1>(elem);
-					return nlohmann::json::array({ DefaultSerialize(key_element, pushError) , DefaultSerialize(value_element, pushError) });
+					json_array.push_back(DefaultSerialize<M>(key_element, pushError));
+					json_array.push_back(DefaultSerialize<M>(value_element, pushError));
+					return json_array;
 				});
 
 			return json_collection;
@@ -40,7 +40,7 @@ struct MapSerializer
 		return std::nullopt;
 	}
 
-	template<typename T>
+	template<typename M, typename T>
 	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
@@ -55,7 +55,11 @@ struct MapSerializer
 				{
 					if (json_elem.size() == 2)
 					{
-						return { DefaultDeserialize<KeyType>(json_elem.at(0), pushError), DefaultDeserialize<ValueType>(json_elem.at(1), pushError) };
+						return 
+						{ 
+							DefaultDeserialize<M,KeyType>(json_elem.at(0), pushError), 
+							DefaultDeserialize<M,ValueType>(json_elem.at(1), pushError) 
+						};
 					}
 					else
 					{

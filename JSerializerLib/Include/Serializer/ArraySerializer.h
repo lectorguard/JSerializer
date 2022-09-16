@@ -6,9 +6,6 @@
 #include <array>
 #include <algorithm>
 
-template<typename T> static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
-template<typename T> static T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
-
 struct ArraySerializer
 {
 	template<typename Type>
@@ -17,7 +14,7 @@ struct ArraySerializer
 		return is_std_array<Type>();
 	}
 
-	template<typename T>
+	template<typename M, typename T>
 	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 	{
 		if constexpr (IsCorrectType<T>())
@@ -27,7 +24,7 @@ struct ArraySerializer
 			nlohmann::json json_collection = nlohmann::json::array();
 			for (size_t i = 0; i < std::size(obj); ++i)
 			{
-				nlohmann::json serialized = DefaultSerialize(obj[i], pushError);
+				nlohmann::json serialized = DefaultSerialize<M>(obj[i], pushError);
 				json_collection.push_back(serialized);
 			}
 			return json_collection;
@@ -35,7 +32,7 @@ struct ArraySerializer
 		return std::nullopt;
 	}
 
-	template<typename T>
+	template<typename M, typename T>
 	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 	{
 		using CurrentType = std::remove_reference<T>::type;
@@ -54,7 +51,7 @@ struct ArraySerializer
 			}
 			for (size_t i = 0; i < j.size(); ++i)
 			{
-				V deserialized = DefaultDeserialize<V>(j.at(i), pushError);
+				V deserialized = DefaultDeserialize<M,V>(j.at(i), pushError);
 				temp[i] = deserialized;
 			}
 			return temp;
