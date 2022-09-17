@@ -50,13 +50,6 @@ concept JSerErrorCompatible = std::is_same_v<typename T::value_type, JSerError>;
 
 using PushErrorType = typename std::function<void(JSerError)>&;
 
-
-struct CustomSerializeItem
-{
-	std::function<void(nlohmann::json&, PushErrorType)> SerializeCB = nullptr;
-	std::function<void(nlohmann::json&, PushErrorType)> DeserializeCB = nullptr;
-};
-
 struct DefaultSerializeItem
 {
 	std::vector<std::string> ParameterNames = {};
@@ -167,9 +160,6 @@ struct JSerializable {
 	template<typename M, typename...O>
 	inline constexpr DefaultSerializeItem CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects);
 
-
-	inline void AddCustomSerializeItem(const CustomCB& SerializeCB, const CustomCB& DeserializeCB);
-
 private:
 	inline nlohmann::json SerializeObject_Internal(PushErrorType pushError);
 
@@ -185,9 +175,6 @@ private:
 
 	template<size_t index = 0, typename M, typename...O>
 	static void Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects);
-
-	std::vector<CustomSerializeItem> CustomSerializeChunks = {};
-	std::vector<std::function<void()>> Validation = {};
 
 	friend struct PolymorphicSerializer;
 };

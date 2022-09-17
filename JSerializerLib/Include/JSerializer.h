@@ -76,20 +76,11 @@ inline constexpr DefaultSerializeItem JSerializable::CreateSerializeItem( const 
 	};
 };
 
-
-inline void JSerializable::AddCustomSerializeItem(const CustomCB& SerializeCB, const CustomCB& DeserializeCB)
-{
-	assert(SerializeCB && DeserializeCB && "Valid function pointers must be provided (de)serialization");
-
-	CustomSerializeChunks.push_back({ SerializeCB, DeserializeCB });
-}
-
-
 inline nlohmann::json JSerializable::SerializeObject_Internal(PushErrorType pushError)
 {
 	Validate(JSerEvent::BEFORE_SERIALIZATION, pushError);
 	std::vector<DefaultSerializeItem> DefaultSerializeChunks = AddItem().GetItems();
-	if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
+	if (DefaultSerializeChunks.size() == 0)
 	{
 		pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling SerializeObject. " });
 	}
@@ -99,27 +90,19 @@ inline nlohmann::json JSerializable::SerializeObject_Internal(PushErrorType push
 	{
 		item.SerializeCB(j, item.ParameterNames, pushError);
 	}
-	for (CustomSerializeItem& item : CustomSerializeChunks)
-	{
-		item.SerializeCB(j, pushError);
-	}
 	return j;
 }
 
 inline void JSerializable::DeserializeObject_Internal(nlohmann::json j, PushErrorType pushError)
 {
 	std::vector<DefaultSerializeItem> DefaultSerializeChunks = AddItem().GetItems();
-	if (CustomSerializeChunks.size() == 0 && DefaultSerializeChunks.size() == 0)
+	if (DefaultSerializeChunks.size() == 0)
 	{
 		pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling DeserializeObject." });
 	}
 	for (DefaultSerializeItem& item : DefaultSerializeChunks)
 	{
 		item.DeserializeCB(j, item.ParameterNames, pushError);
-	}
-	for (CustomSerializeItem& item : CustomSerializeChunks)
-	{
-		item.DeserializeCB(j, pushError);
 	}
 	Validate(JSerEvent::AFTER_DESERIALIZATION, pushError);
 }

@@ -24,8 +24,9 @@ Simple to use json serializer for c++
     - Any container could be filled with polymorph objects DONE
     - test map of array of something else of .... DONE
     - Bessere test schreiben lul DONE 
-    - Füge korrekte typ identifikationstest hinzu
-    - Überarbeite custom serialization, sodass custom types standardmäßig deserialisiert werden können
+    - Füge korrekte typ identifikationstest hinzu DONE
+    - Überarbeite custom serialization, 
+      sodass custom types standardmäßig deserialisiert werden können DONE
 - Create namespace around the library
 - Write docs inside this readme 
 

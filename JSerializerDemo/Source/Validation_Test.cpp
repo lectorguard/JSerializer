@@ -7,6 +7,7 @@
 namespace Validation_Test
 {
     CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+
     struct Foo : JSerializable
     {
         std::stack<float> foo_stack;
@@ -17,32 +18,6 @@ namespace Validation_Test
             {
                 foo_stack.emplace(elem);
             }
-
-            JSER_ADD_CUSTOM(
-                [this](nlohmann::json& j, PushErrorType pushError)
-                {
-                   std::deque<float> deque_casted = foo_stack._Get_container();
-                   std::vector<float> serializable(deque_casted.begin(), deque_casted.end());
-                   j["foo"] = serializable;
-                },
-                [this](nlohmann::json& j, PushErrorType pushError)
-                {
-					if (j.contains("foo"))
-					{
-						std::stack<float> foo_temp;
-						const std::vector<float> deserialized = j["foo"];
-                        std::for_each(deserialized.begin(), deserialized.end(), 
-                            [&foo_temp](float f)
-                            {
-                                foo_temp.push(f);
-                            }
-                        );
-                        foo_stack = foo_temp;
-					}
-					else std::cout << "foo does not exist ";
-
-                }
-                );
         }
 
         void Validate(JSerEvent jser_event, PushErrorType push_error) override
@@ -58,6 +33,11 @@ namespace Validation_Test
 			{
 				expect(deque_casted[i] == pushed_elements[i]) << "Elements in deque and vector are not identical";
 			}
+        }
+
+        JserChunkAppender AddItem() override
+        {
+            return JSerializable::AddItem().Append(JSER_ADD(JSERManager, foo_stack));
         }
 
     };
@@ -82,7 +62,7 @@ namespace Validation_Test
 
 		"validation from string"_test = []
 		{
-            const char* expected = R"({"foo":[12.5,9.5,7.5,23.5,15.5,16.5,4.5]})";
+            const char* expected = R"({"foo_stack":[12.5,9.5,7.5,23.5,15.5,16.5,4.5]})";
 			Foo foo;
 			std::list<JSerError> errorList;
 			std::string result = foo.SerializeObjectString(std::back_inserter(errorList));

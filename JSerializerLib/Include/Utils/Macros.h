@@ -37,41 +37,19 @@
 #define COMMACONTENT(X) COMMA X
 #define OPEN_BRACKET  {
 #define CLOSE_BRACKET }
-// Helper function
-#define JSER_ADD(managerType, ...) CreateSerializeItem<managerType>(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
-#define JSER_ADD_CUSTOM(SerializeCB,DeserializeCB)AddCustomSerializeItem(SerializeCB, DeserializeCB)
 
+// Create JSER Manager Type for Serialization
 #define DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER ListVectorDequeSerializer ,PolymorphicSerializer, \
                                                 SetSerializer,ArraySerializer,ValarraySerializer, \
                                                 ForwardListSerializer,MapSerializer,TupleSerializer, \
                                                 BitsetSerializer,StackAndQueueSerializer,PriorityQueueSerializer 
 
-//#define CREATE_DEFAULT_JSER_MANAGER(name) using JSERManagerType = typename SerializationManager<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER>; \
-//						                      static constexpr inline JSERManagerType name
-//
-//#define CREATE_CUSTOM_JSER_MANAGER(name, ...) using JSERManagerType = typename SerializationManager<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>; \
-//						                      static constexpr inline JSERManagerType name
-
 #define CREATE_CUSTOM_JSER_MANAGER_TYPE(managerType, firstType, ...) using managerType = typename std::variant<firstType FOR_EACH(COMMACONTENT ,__VA_ARGS__)>
 #define CREATE_EXTENDED_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>
 #define CREATE_DEFAULT_JSER_MANAGER_TYPE(managerType) using managerType = typename std::variant<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER>
 
-//#define CREATE_EXTENDED_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::invoke_result_t<decltype(CreateJSERTypeArray<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>)>; \
-//						                      static constexpr inline managerType managerName = CreateJSERTypeArray<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>()
-//
-//#define CREATE_DEFAULT_JSER_MANAGER_TYPE(managerType) using managerType = typename std::invoke_result_t<decltype(CreateJSERTypeArray<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER>)>; \
-//						                      static constexpr inline managerType managerName = CreateJSERTypeArray<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER>()
+// Add elements to serialize 
+#define JSER_ADD(managerType, ...) CreateSerializeItem<managerType>(OPEN_BRACKET FOR_EACH(STRWITHCOMMA,__VA_ARGS__) CLOSE_BRACKET FOR_EACH(COMMACONTENT,__VA_ARGS__))
 
 
-//sizeof...(_Types)
-
-//const std::array<std::variant<Types ...>, sizeof...(Types)> JSerBehavior = { {Types() ...} };
-
-
-
-
-//#define DEFAULT_SERIALIZATION_TYPES ListVectorDequeSerializer, PolymorphicSerializer, SetSerializer, \
-//                                    ArraySerializer,ValarraySerializer,ForwardListSerializer, \
-//                                    MapSerializer,TupleSerializer,BitsetSerializer, \
-//                                    StackAndQueueSerializer,PriorityQueueSerializer
 
