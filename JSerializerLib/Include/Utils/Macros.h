@@ -44,7 +44,7 @@
                                                 ForwardListSerializer,MapSerializer,TupleSerializer, \
                                                 BitsetSerializer,StackAndQueueSerializer,PriorityQueueSerializer 
 
-#define CREATE_CUSTOM_JSER_MANAGER_TYPE(managerType, firstType, ...) using managerType = typename std::variant<firstType FOR_EACH(COMMACONTENT ,__VA_ARGS__)>
+#define CREATE_CUSTOM_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<__VA_ARGS__>
 #define CREATE_EXTENDED_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>
 #define CREATE_DEFAULT_JSER_MANAGER_TYPE(managerType) using managerType = typename std::variant<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER>
 
