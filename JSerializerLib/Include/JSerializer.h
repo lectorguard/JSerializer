@@ -78,18 +78,26 @@ inline constexpr DefaultSerializeItem JSerializable::CreateSerializeItem( const 
 
 inline nlohmann::json JSerializable::SerializeObject_Internal(PushErrorType pushError)
 {
+	if (bSerializationStarted)
+	{
+		pushError({ JSerErrorTypes::POINTER_ERROR, "Circular Dependencies detected aborting, current serialized type " + std::string(typeid(*this).name()) });
+		return nlohmann::json();
+	}
+
 	Validate(JSerEvent::BEFORE_SERIALIZATION, pushError);
 	std::vector<DefaultSerializeItem> DefaultSerializeChunks = AddItem().GetItems();
 	if (DefaultSerializeChunks.size() == 0)
 	{
 		pushError({ JSerErrorTypes::SETUP_MISSING_ERROR, "You need to call JSER_ADD_ITEMS(...) or similar inside the constructor of " + std::string(typeid(*this).name()) + ", before calling SerializeObject. " });
 	}
-
+	
 	nlohmann::json j;
+	bSerializationStarted = true;
 	for (DefaultSerializeItem& item : DefaultSerializeChunks)
 	{
 		item.SerializeCB(j, item.ParameterNames, pushError);
 	}
+	bSerializationStarted = false;
 	return j;
 }
 
@@ -113,7 +121,7 @@ static void JSerializable::Serialize(nlohmann::json& j, const std::vector<std::s
 	auto& elem = get<index>(objects...);
 
 	using CurrentType = std::remove_reference<decltype(elem)>::type;
-	static_assert(!std::is_pointer_v<CurrentType>, "Serialization does not support pointer types");
+	//static_assert(!std::is_pointer_v<CurrentType>, "Serialization does not support pointer types");
 	// Implemented a prototype for carrays, but carrays are not simply lvalue assignable. Needs a lot of copies and special treatment inside generic serialization logic.
 	static_assert(!std::is_array_v<CurrentType>, "Deserialization of carray pointer is not supported, please use insted std::array");
 
@@ -131,7 +139,7 @@ static void JSerializable::Deserialize(const nlohmann::json& j, const std::vecto
 	auto& elem = get<index>(objects...);
 
 	using CurrentType = std::remove_reference<decltype(elem)>::type;
-	static_assert(!std::is_pointer_v<CurrentType>, "Deserialization does not support pointer types");
+	//static_assert(!std::is_pointer_v<CurrentType>, "Deserialization does not support pointer types");
 	// Implemented a prototype for carrays, but carrays are not simply lvalue assignable. Needs a lot of copies and special treatment inside generic serialization logic.
 	static_assert(!std::is_array_v<CurrentType>, "Deserialization of carray pointer is not supported, please use insted std::array");
 

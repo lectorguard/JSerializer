@@ -30,6 +30,7 @@ enum class JSerErrorTypes
 	MEMBER_ERROR,					// Failed deserializing member variable
 	POLYMORPHIC_ERROR,				// Object is polymorphic but it does not inherit from JSerializable
 	DEFAULT_SERIALIZATION_ERROR,	// Error was returned during default serialization process
+	POINTER_ERROR,					// Weak pointers and circular dependencies are not supported
 	VALIDATION_ERROR,				// Custom error which can be called from user during validation process
 };
 
@@ -161,6 +162,8 @@ struct JSerializable {
 	inline constexpr DefaultSerializeItem CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects);
 
 private:
+
+
 	inline nlohmann::json SerializeObject_Internal(PushErrorType pushError);
 
 	inline void DeserializeObject_Internal(nlohmann::json j, PushErrorType pushError);
@@ -176,6 +179,11 @@ private:
 	template<size_t index = 0, typename M, typename...O>
 	static void Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects);
 
+	template<typename T>
+	static void PrepareDeserialization(T&& elem, PushErrorType pushError);
+
+
+	bool bSerializationStarted = false;
 	friend struct PolymorphicSerializer;
 };
 

@@ -14,6 +14,7 @@ Simple to use json serializer for c++
 	- Error type test -> Also error for pointer and circular dependencies // DONE
 	- Pointer test
 	- Rewrite Validation // DONE
+	- Pointer problem, after shared pointer is deserialized the pointer is replaced, please update all related shared pointer and weak ptr
 - Add support for the following collections
     - stack DONE
     - queue DONE
@@ -29,6 +30,10 @@ Simple to use json serializer for c++
       sodass custom types standardmäßig deserialisiert werden können DONE
 - Create namespace around the library
 - Write docs inside this readme 
+
+- You can pass dereferenced raw pointers as long as they are not null !!
+- No support for weak_ptr because they can expire
+- Smart pointers are deserialized by calling make_unique or make_shared. References need to be updated after deserialization. This can be done by overriding the validation virtual function
 
 ## Usage
 

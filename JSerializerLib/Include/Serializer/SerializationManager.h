@@ -13,6 +13,7 @@
 #include "Serializer/BitsetSerializer.h"
 #include "Serializer/StackAndQueueSerializer.h"
 #include "Serializer/PriorityQueueSerializer.h"
+#include "Serializer/PointerSerializer.h"
 #include <string>
 #include <functional>
 #include <array>
@@ -96,6 +97,7 @@ inline static constexpr nlohmann::json DefaultSerialize(T&& elem, PushErrorType 
 	}
 	else
 	{
+		// If there is an error here, the type you passed to the serializer is probably not supported, please add a custom serializer for this type
 		return nlohmann::json(elem);
 	}
 }
@@ -112,7 +114,7 @@ inline static constexpr T DefaultDeserialize(const nlohmann::json& j, PushErrorT
 	{
 		if (std::optional<T> obj = DeserializeByJSER<M,T>(j, pushError))
 		{
-			return *obj;
+			return std::move(*obj);
 		}
 		pushError({ JSerErrorTypes::DEFAULT_SERIALIZATION_ERROR, "JSerializable supported type " + std::string(typeid(CurrentType).name()) + " could not be deserialized" });
 		return T();

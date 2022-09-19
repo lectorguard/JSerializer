@@ -42,7 +42,8 @@
 #define DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER ListVectorDequeSerializer ,PolymorphicSerializer, \
                                                 SetSerializer,ArraySerializer,ValarraySerializer, \
                                                 ForwardListSerializer,MapSerializer,TupleSerializer, \
-                                                BitsetSerializer,StackAndQueueSerializer,PriorityQueueSerializer 
+                                                BitsetSerializer,StackAndQueueSerializer,PriorityQueueSerializer,\
+                                                PointerSerializer
 
 #define CREATE_CUSTOM_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<__VA_ARGS__>
 #define CREATE_EXTENDED_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>
