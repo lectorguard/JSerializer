@@ -5,48 +5,51 @@
 #include <optional>
 
 
-struct PolymorphicSerializer
+namespace jser
 {
-	template<typename Type>
-	inline static constexpr bool IsCorrectType() 
+	struct PolymorphicSerializer
 	{
-		return std::is_polymorphic_v<Type>;
-	}
-
-	template<typename M, typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError)
-	{
-		if constexpr (IsCorrectType<T>())
+		template<typename Type>
+		inline static constexpr bool IsCorrectType() 
 		{
-			nlohmann::json j;
-			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&obj)) // runtime check
+			return std::is_polymorphic_v<Type>;
+		}
+	
+		template<typename M, typename T>
+		std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError)
+		{
+			if constexpr (IsCorrectType<T>())
 			{
-				if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
+				nlohmann::json j;
+				if (JSerializable* serializable = dynamic_cast<JSerializable*>(&obj)) // runtime check
 				{
-					j = *subj;
+					if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
+					{
+						j = *subj;
+					}
 				}
+				else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(T).name()) + " must inherit from JSerializable in order to be Serializable. " });
+				return j;
 			}
-			else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(T).name()) + " must inherit from JSerializable in order to be Serializable. " });
-			return j;
-		}
-		return std::nullopt;
-		
-	};
-
-	template<typename M, typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
-	{
-		if constexpr (IsCorrectType<T>())
+			return std::nullopt;
+			
+		};
+	
+		template<typename M, typename T>
+		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 		{
-			T temp;
-			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&temp)) // runtime check
+			if constexpr (IsCorrectType<T>())
 			{
-				serializable->DeserializeObject_Internal(j, pushError);
+				T temp;
+				if (JSerializable* serializable = dynamic_cast<JSerializable*>(&temp)) // runtime check
+				{
+					serializable->DeserializeObject_Internal(j, pushError);
+				}
+				else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(T).name()) + " must inherit from JSerializable in order to be Serializable. " });
+				return temp;
 			}
-			else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(T).name()) + " must inherit from JSerializable in order to be Serializable. " });
-			return temp;
+			return std::nullopt;
 		}
-		return std::nullopt;
-	}
-};
+	};
+}
 

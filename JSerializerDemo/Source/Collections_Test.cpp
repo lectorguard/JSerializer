@@ -24,9 +24,12 @@
                                                             expect(!is_specialization<std::decay_t<decltype(c)>, type>()); \
                                                             expect(!is_specialization<std::decay_t<decltype(d)>, type>());
 
+
+
 namespace Collections_Test
 {
     CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+    using namespace jser;
 
     boost::ut::suite Collections_Test = [] {
         using namespace boost::ut;

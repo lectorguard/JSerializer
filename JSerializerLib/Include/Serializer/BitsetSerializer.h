@@ -5,33 +5,36 @@
 #include <optional>
 #include <bitset>
 
-struct BitsetSerializer
+namespace jser
 {
-	template<typename Type>
-	inline static constexpr bool IsCorrectType()
+	struct BitsetSerializer
 	{
-		return is_bitset<Type>();
-	}
-
-	template<typename M, typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
-	{
-		if constexpr (IsCorrectType<T>())
+		template<typename Type>
+		inline static constexpr bool IsCorrectType()
 		{
-			return nlohmann::json(obj.to_string());
+			return is_bitset<Type>();
 		}
-		return std::nullopt;
-	}
-
-	template<typename M, typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
-	{
-		using CurrentType = std::remove_reference<T>::type;
-
-		if constexpr (IsCorrectType<T>())
+	
+		template<typename M, typename T>
+		std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 		{
-			return T(j.get<std::string>());
+			if constexpr (IsCorrectType<T>())
+			{
+				return nlohmann::json(obj.to_string());
+			}
+			return std::nullopt;
 		}
-		return std::nullopt;
-	}
-};
+	
+		template<typename M, typename T>
+		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
+		{
+			using CurrentType = std::remove_reference<T>::type;
+	
+			if constexpr (IsCorrectType<T>())
+			{
+				return T(j.get<std::string>());
+			}
+			return std::nullopt;
+		}
+	};
+}

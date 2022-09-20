@@ -7,6 +7,7 @@
 namespace Validation_Test
 {
     CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+    using namespace jser;
 
     struct Foo : JSerializable
     {

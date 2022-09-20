@@ -20,6 +20,8 @@
 namespace StackedCollection_Test
 {
 	CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+	using namespace jser;
+	
 	struct Foo0 : JSerializable
 	{
 		int16_t foo_int = 44;

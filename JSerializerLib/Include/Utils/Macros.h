@@ -39,11 +39,11 @@
 #define CLOSE_BRACKET }
 
 // Create JSER Manager Type for Serialization
-#define DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER ListVectorDequeSerializer ,PolymorphicSerializer, \
-                                                SetSerializer,ArraySerializer,ValarraySerializer, \
-                                                ForwardListSerializer,MapSerializer,TupleSerializer, \
-                                                BitsetSerializer,StackAndQueueSerializer,PriorityQueueSerializer,\
-                                                PointerSerializer
+#define DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER jser::ListVectorDequeSerializer ,jser::PolymorphicSerializer, \
+                                                jser::SetSerializer,jser::ArraySerializer,jser::ValarraySerializer, \
+                                                jser::ForwardListSerializer,jser::MapSerializer,jser::TupleSerializer, \
+                                                jser::BitsetSerializer,jser::StackAndQueueSerializer,jser::PriorityQueueSerializer,\
+                                                jser::PointerSerializer
 
 #define CREATE_CUSTOM_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<__VA_ARGS__>
 #define CREATE_EXTENDED_JSER_MANAGER_TYPE(managerType, ...) using managerType = typename std::variant<DEFAUL_SERIALIZATION_CONSTRUCTOR_HELPER FOR_EACH(COMMACONTENT ,__VA_ARGS__)>

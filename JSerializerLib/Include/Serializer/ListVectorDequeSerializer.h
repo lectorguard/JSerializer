@@ -6,47 +6,50 @@
 #include <vector>
 #include <algorithm>
 
-struct ListVectorDequeSerializer
+namespace jser
 {
-	template<typename Type>
-	inline static constexpr bool IsCorrectType() 
+	struct ListVectorDequeSerializer
 	{
-		return is_specialization<Type, std::vector>() || is_specialization<Type, std::list>() || is_specialization<Type, std::deque>();
-	}
-
-	template<typename M, typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
-	{
-		if constexpr (IsCorrectType<T>())
+		template<typename Type>
+		inline static constexpr bool IsCorrectType() 
 		{
-			using V = typename T::value_type;
-
-			nlohmann::json json_collection = nlohmann::json::array();
-			std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](V elem) 
-				{ 
-					return DefaultSerialize<M>(elem, pushError);
-				});
-			return json_collection;
+			return is_specialization<Type, std::vector>() || is_specialization<Type, std::list>() || is_specialization<Type, std::deque>();
 		}
-		return std::nullopt;
-	}
-
-	template<typename M, typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
-	{
-		using CurrentType = std::remove_reference<T>::type;
-
-		if constexpr (IsCorrectType<T>())
+	
+		template<typename M, typename T>
+		std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 		{
-			using V = typename T::value_type;
-
-			T temp;
-			std::transform(j.begin(), j.end(), std::back_inserter(temp), [&pushError](const nlohmann::json& json_elem)
-				{
-					return DefaultDeserialize<M,V>(json_elem, pushError);
-				});
-			return temp;
+			if constexpr (IsCorrectType<T>())
+			{
+				using V = typename T::value_type;
+	
+				nlohmann::json json_collection = nlohmann::json::array();
+				std::transform(obj.begin(), obj.end(), std::back_inserter(json_collection), [&pushError](V elem) 
+					{ 
+						return DefaultSerialize<M>(elem, pushError);
+					});
+				return json_collection;
+			}
+			return std::nullopt;
 		}
-		return std::nullopt;
-	}
-};
+	
+		template<typename M, typename T>
+		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
+		{
+			using CurrentType = std::remove_reference<T>::type;
+	
+			if constexpr (IsCorrectType<T>())
+			{
+				using V = typename T::value_type;
+	
+				T temp;
+				std::transform(j.begin(), j.end(), std::back_inserter(temp), [&pushError](const nlohmann::json& json_elem)
+					{
+						return DefaultDeserialize<M,V>(json_elem, pushError);
+					});
+				return temp;
+			}
+			return std::nullopt;
+		}
+	};
+}

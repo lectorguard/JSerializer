@@ -7,6 +7,8 @@
 namespace PrimitiveDatatypes_Test 
 {
     CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+
+    using namespace jser;
     enum class FooEnum : uint8_t
     {
         FOO, FOO1, FOO2, FOO3, FOO4, FOO5, FOO6, FOO7, FOO8, FOO9,

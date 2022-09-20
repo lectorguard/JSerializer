@@ -6,48 +6,51 @@
 #include <queue>
 #include <algorithm>
 
-struct PriorityQueueSerializer
+namespace jser
 {
-	template<typename Type>
-	inline static constexpr bool IsCorrectType()
+	struct PriorityQueueSerializer
 	{
-		return is_specialization<Type, std::priority_queue>();
-	}
-
-	template<typename M, typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
-	{
-		if constexpr (IsCorrectType<T>())
+		template<typename Type>
+		inline static constexpr bool IsCorrectType()
 		{
-			nlohmann::json json_collection = nlohmann::json::array();
-			T copy = obj;
-			while (!copy.empty())
+			return is_specialization<Type, std::priority_queue>();
+		}
+	
+		template<typename M, typename T>
+		std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
+		{
+			if constexpr (IsCorrectType<T>())
 			{
-				json_collection.push_back(DefaultSerialize<M>(copy.top(), pushError));
-				copy.pop();
-			}
-			return json_collection;
-		}
-		return std::nullopt;
-	}
-
-	template<typename M, typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
-	{
-		using CurrentType = std::remove_reference<T>::type;
-
-		if constexpr (IsCorrectType<T>())
-		{
-			using V = typename T::value_type;
-
-			T temp;
-			std::for_each(j.begin(), j.end(), [&temp, &pushError](const nlohmann::json& json_elem)
+				nlohmann::json json_collection = nlohmann::json::array();
+				T copy = obj;
+				while (!copy.empty())
 				{
-					temp.push(DefaultDeserialize<M,V>(json_elem, pushError));
-				});
-			return temp;
+					json_collection.push_back(DefaultSerialize<M>(copy.top(), pushError));
+					copy.pop();
+				}
+				return json_collection;
+			}
+			return std::nullopt;
 		}
-		return std::nullopt;
-	}
-};
+	
+		template<typename M, typename T>
+		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
+		{
+			using CurrentType = std::remove_reference<T>::type;
+	
+			if constexpr (IsCorrectType<T>())
+			{
+				using V = typename T::value_type;
+	
+				T temp;
+				std::for_each(j.begin(), j.end(), [&temp, &pushError](const nlohmann::json& json_elem)
+					{
+						temp.push(DefaultDeserialize<M,V>(json_elem, pushError));
+					});
+				return temp;
+			}
+			return std::nullopt;
+		}
+	};
+}
 

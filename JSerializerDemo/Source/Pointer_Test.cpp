@@ -7,6 +7,8 @@ namespace Pointer_Test
 {
 	CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
 
+	using namespace jser;
+
 	struct Foo2 : JSerializable
 	{
 		bool foo_bool;

@@ -6,52 +6,55 @@
 #include <valarray>
 #include <algorithm>
 
-struct ValarraySerializer
+namespace jser
 {
-	template<typename Type>
-	inline static constexpr bool IsCorrectType()
+	struct ValarraySerializer
 	{
-		return is_specialization<Type, std::valarray>();
-	}
-
-	template<typename M, typename T>
-	std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
-	{
-		if constexpr (IsCorrectType<T>())
+		template<typename Type>
+		inline static constexpr bool IsCorrectType()
 		{
-			using V = typename T::value_type;
-
-			nlohmann::json json_collection = nlohmann::json::array();
-			for (size_t i = 0; i < std::size(obj); ++i)
-			{
-				nlohmann::json serialized = DefaultSerialize<M>(obj[i], pushError);
-				json_collection.push_back(serialized);
-			}
-			return json_collection;
+			return is_specialization<Type, std::valarray>();
 		}
-		return std::nullopt;
-	}
-
-	template<typename M, typename T>
-	std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
-	{
-		using CurrentType = std::remove_reference<T>::type;
-
-		if constexpr (IsCorrectType<T>())
+	
+		template<typename M, typename T>
+		std::optional<nlohmann::json> Serialize(T& obj, PushErrorType pushError) const
 		{
-			using V = typename T::value_type;
-
-			T temp;
-			if (std::size(temp) != j.size())temp.resize(j.size());
-			for (size_t i = 0; i < j.size(); ++i)
+			if constexpr (IsCorrectType<T>())
 			{
-				V deserialized = DefaultDeserialize<M,V>(j.at(i), pushError);
-				temp[i] = deserialized;
+				using V = typename T::value_type;
+	
+				nlohmann::json json_collection = nlohmann::json::array();
+				for (size_t i = 0; i < std::size(obj); ++i)
+				{
+					nlohmann::json serialized = DefaultSerialize<M>(obj[i], pushError);
+					json_collection.push_back(serialized);
+				}
+				return json_collection;
 			}
-			return temp;
+			return std::nullopt;
 		}
-		return std::nullopt;
-	}
-};
+	
+		template<typename M, typename T>
+		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
+		{
+			using CurrentType = std::remove_reference<T>::type;
+	
+			if constexpr (IsCorrectType<T>())
+			{
+				using V = typename T::value_type;
+	
+				T temp;
+				if (std::size(temp) != j.size())temp.resize(j.size());
+				for (size_t i = 0; i < j.size(); ++i)
+				{
+					V deserialized = DefaultDeserialize<M,V>(j.at(i), pushError);
+					temp[i] = deserialized;
+				}
+				return temp;
+			}
+			return std::nullopt;
+		}
+	};
+}
 
 

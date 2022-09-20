@@ -3,10 +3,10 @@
 #include "JSerializer.h"
 
 
-
 namespace Association_Test
 {
     CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+    using namespace jser;
 
     struct Foo : JSerializable
     {
@@ -124,7 +124,6 @@ namespace Association_Test
             expect(errorList.size() == 0) << "Deserialization of many object associations throws error";
             foo.foo.foo.foo.foo.foo.compare(deserialized.foo.foo.foo.foo.foo);
         };
-
     };
 }
 

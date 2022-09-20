@@ -7,7 +7,10 @@
 
 namespace Error_Test
 {
+	
+
 	CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
+	using namespace jser;
 
 	template<typename Test, template<typename...> class Ref>
 	struct is_specialization_v : std::false_type {};
