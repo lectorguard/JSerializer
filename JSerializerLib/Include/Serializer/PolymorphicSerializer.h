@@ -19,7 +19,7 @@ struct PolymorphicSerializer
 		if constexpr (IsCorrectType<T>())
 		{
 			nlohmann::json j;
-			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&obj)) // not constexpr
+			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&obj)) // runtime check
 			{
 				if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
 				{
@@ -39,11 +39,10 @@ struct PolymorphicSerializer
 		if constexpr (IsCorrectType<T>())
 		{
 			T temp;
-			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&temp)) // not constexpr
+			if (JSerializable* serializable = dynamic_cast<JSerializable*>(&temp)) // runtime check
 			{
 				serializable->DeserializeObject_Internal(j, pushError);
 			}
-			// does not compile with "j[names[index]] = elem;", if statement above must be a constexpr but it isnt :/
 			else pushError({ JSerErrorTypes::POLYMORPHIC_ERROR, " " + std::string(typeid(T).name()) + " must inherit from JSerializable in order to be Serializable. " });
 			return temp;
 		}

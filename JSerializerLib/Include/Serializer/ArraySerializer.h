@@ -58,6 +58,5 @@ struct ArraySerializer
 		}
 		return std::nullopt;
 	}
-
 };
 

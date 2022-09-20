@@ -31,20 +31,6 @@ namespace Collections_Test
     boost::ut::suite Collections_Test = [] {
         using namespace boost::ut;
 
-        //"custom serialization from string"_test = [] {
-        //    Foo foo;
-        //    std::list<JSerError> errorList;
-        //    std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
-        //    expect(errorList.size() == 0) << "Serialization of many object associations throws error";
-        //    const char* expectedResult = R"({"foo0":15,"foo1":56656565,"foo2":498,"foo3":48})";
-        //    expect(!result.compare(expectedResult));
-        //
-        //    Foo deserialized;
-        //    deserialized.DeserializeObject(expectedResult, std::back_inserter(errorList));
-        //    expect(errorList.size() == 0) << "Deserialization of many object associations throws error";
-        //    foo.compare(deserialized);
-        //};
-
         "simple iterable types "_test = []()
         {
             

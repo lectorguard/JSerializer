@@ -52,7 +52,6 @@ struct ValarraySerializer
 		}
 		return std::nullopt;
 	}
-
 };
 
 

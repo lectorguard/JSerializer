@@ -17,8 +17,7 @@
 #include <valarray>
 #include <tuple>
 
-
-namespace Stacked_Collections
+namespace StackedCollection_Test
 {
 	CREATE_DEFAULT_JSER_MANAGER_TYPE(JSERManager);
 	struct Foo0 : JSerializable
@@ -206,7 +205,5 @@ namespace Stacked_Collections
 			expect(foo_list_result);
 
 		};
-
-
 	};
 };
