@@ -118,7 +118,13 @@ namespace jser
 	}
 	
 	template<size_t index, typename M, typename...O>
-	static void JSerializable::Serialize(nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+	void JSerializable::Serialize(nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)
+#elif defined(_MSC_VER)
+	static void JSerializable::Serialize(nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)				
+#endif
 	{
 		auto& elem = get<index>(objects...);
 	
@@ -135,7 +141,13 @@ namespace jser
 	}
 	
 	template<size_t index, typename M, typename...O>
-	static void JSerializable::Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+	void JSerializable::Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)
+#elif defined(_MSC_VER)
+	static void JSerializable::Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)				
+#endif
 	{
 		auto& elem = get<index>(objects...);
 	

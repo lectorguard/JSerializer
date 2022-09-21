@@ -12,8 +12,13 @@ namespace CustomSerialization_Test
     template<typename T>
     struct Vector3
     {
-        using value_type = typename T;
+#if defined(__clang__)
 
+#elif defined(__GNUC__) || defined(__GNUG__)
+		typedef T 	value_type;
+#elif defined(_MSC_VER)
+		using value_type = typename T;	
+#endif	
         value_type X;
         value_type Y;
         value_type Z;

@@ -23,13 +23,36 @@ namespace jser
 			if constexpr (IsCorrectType<T>())
 			{
 				using V = typename T::value_type;
-	
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+				std::vector<V> casted_container;
+				T copy = obj;
+				if constexpr(is_specialization<T, std::queue>())
+				{
+					while(!copy.empty())
+    				{
+    				    casted_container.emplace_back(copy.front());
+    				    copy.pop();
+    				}
+				}
+				else
+				{
+					while(!copy.empty())
+    				{
+    				    casted_container.emplace_back(copy.top());
+    				    copy.pop();
+    				}
+    				reverse(casted_container.begin(), casted_container.end());
+				}
+#elif defined(_MSC_VER)
+				auto casted_container = obj._Get_container();			
+#endif
 				nlohmann::json json_collection = nlohmann::json::array();
-				auto casted_container = obj._Get_container();
 				std::transform(casted_container.begin(), casted_container.end(), std::back_inserter(json_collection), [&pushError](V elem)
-					{
-						return DefaultSerialize<M>(elem, pushError);
-					});
+				{
+					return DefaultSerialize<M>(elem, pushError);
+				});
 				return json_collection;
 			}
 			return std::nullopt;

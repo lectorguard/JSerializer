@@ -91,9 +91,10 @@ namespace jser
 	inline static constexpr auto CreateJSERArray()->std::array<V, std::variant_size_v<V>>
 	{
 		using ArrayType = std::array<V, std::variant_size_v<V>>;
+		using TupleType = typename ToTuple<V>::type;
 	
 		ArrayType my_array;
-		std::apply([&my_array](auto&& ... args) { my_array = { {args ...} }; }, ToTuple<V>::type());
+		std::apply([&my_array](auto&& ... args) { my_array = { {args ...} }; }, TupleType());
 		return my_array;
 	}
 	

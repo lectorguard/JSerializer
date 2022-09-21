@@ -3,6 +3,8 @@
 #include "JSerializer.h"
 #include <iostream>
 #include <stack>
+#include <vector>
+#include <algorithm>
 
 namespace Validation_Test
 {
@@ -24,15 +26,29 @@ namespace Validation_Test
         void Validate(JSerEvent jser_event, PushErrorType push_error) override
         {
             using namespace boost::ut;
+
             if (foo_stack.size() != pushed_elements.size())
             {
 				push_error({ JSerErrorTypes::VALIDATION_ERROR, "Check if validation errors are working" });
 				return;
             }
-			const std::deque<float> deque_casted = foo_stack._Get_container();
-			for (size_t i = 0; i < deque_casted.size(); ++i)
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+	        std::vector<float> temp;
+            std::stack<float> copy = foo_stack;
+            while(!copy.empty())
+            {
+                temp.emplace_back(copy.top());
+                copy.pop();
+            }
+            std::reverse(temp.begin(), temp.end());
+#elif defined(_MSC_VER)
+            const std::deque<float> temp = foo_stack._Get_container();
+#endif
+			for (size_t i = 0; i < temp.size(); ++i)
 			{
-				expect(deque_casted[i] == pushed_elements[i]) << "Elements in deque and vector are not identical";
+				expect(temp[i] == pushed_elements[i]) << "Elements in deque and vector are not identical";
 			}
         }
 

@@ -45,7 +45,13 @@ namespace jser
 			std::optional<nlohmann::json> j;
 			std::visit([&j, &obj, &pushError](auto x)
 				{
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+					j = x.template Serialize<M>(obj, pushError);
+#elif defined(_MSC_VER)
 					j = x.Serialize<M>(obj, pushError);
+#endif
 				},elem);
 			if (j) return j;
 		}
@@ -62,7 +68,13 @@ namespace jser
 			std::optional<T> obj;
 			std::visit([&obj, &j, &pushError](const auto& x) 
 				{
-					obj = x.Deserialize<M,T>(j, pushError); 
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+					obj = x.template Deserialize<M,T>(j, pushError);
+#elif defined(_MSC_VER)
+					obj = x.Deserialize<M,T>(j, pushError);
+#endif
 				}, elem);
 			if (obj) return obj;
 		}
@@ -76,7 +88,17 @@ namespace jser
 		bool serializable = false;
 		for (auto elem : CreateJSERArray<M>())
 		{
-			std::visit([&serializable](auto x) {serializable = serializable || x.IsCorrectType<T>(); }, elem);
+			std::visit([&serializable](auto x) 
+			{
+				serializable = serializable || 
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+				x.template IsCorrectType<T>(); 
+#elif defined(_MSC_VER)
+				x.IsCorrectType<T>(); 
+#endif
+			}, elem);
 		}
 		return serializable;
 	}

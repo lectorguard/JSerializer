@@ -21,7 +21,14 @@ namespace jser
 			if constexpr (IsCorrectType<T>())
 			{
 				nlohmann::json j;
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+				// If this test fails at compile time, temp is probably not inheriting from JSerializable
+				if (JSerializable* serializable = &obj)
+#elif defined(_MSC_VER)
 				if (JSerializable* serializable = dynamic_cast<JSerializable*>(&obj)) // runtime check
+#endif	
 				{
 					if (std::optional<nlohmann::json> subj = serializable->SerializeObject_Internal(pushError))
 					{
@@ -41,7 +48,14 @@ namespace jser
 			if constexpr (IsCorrectType<T>())
 			{
 				T temp;
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+				// If this test fails at compile time, temp is probably not inheriting from JSerializable
+				if (JSerializable* serializable = &temp)
+#elif defined(_MSC_VER)
 				if (JSerializable* serializable = dynamic_cast<JSerializable*>(&temp)) // runtime check
+#endif	
 				{
 					serializable->DeserializeObject_Internal(j, pushError);
 				}

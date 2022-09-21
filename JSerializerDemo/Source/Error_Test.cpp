@@ -138,7 +138,11 @@ namespace Error_Test
 					virtual ~FooY() {};
 					char foo_char = 'c';
 				};
-				
+#if defined(__clang__)
+
+#elif defined(__GNUC__) || defined(__GNUG__)
+	// There is a compile error for GCC, thats even better than a runtime error message, just the case if an object is not inheriting from JSerializable
+#elif defined(_MSC_VER)
 				struct FooZ : JSerializable
 				{
 					FooZ() { };
@@ -169,7 +173,8 @@ namespace Error_Test
 					deserialized.DeserializeObject(invalid_json, std::back_inserter(errorList));
 					expect(errorList.size() == 1) << "When a referenced object is not inheriting from JSerializer an error is returned";
 					expect(errorList.front().Error == JSerErrorTypes::POLYMORPHIC_ERROR);
-				};
+				};	
+#endif
 			};
 		};
 	};
