@@ -23,9 +23,7 @@ namespace jser
 			if constexpr (IsCorrectType<T>())
 			{
 				using V = typename T::value_type;
-#if defined(__clang__)
-
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
 				std::vector<V> casted_container;
 				T copy = obj;
 				if constexpr(is_specialization<T, std::queue>())
@@ -61,8 +59,6 @@ namespace jser
 		template<typename M, typename T>
 		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 		{
-			using CurrentType = std::remove_reference<T>::type;
-	
 			if constexpr (IsCorrectType<T>())
 			{
 				using V = typename T::value_type;

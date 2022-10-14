@@ -12,9 +12,7 @@ namespace CustomSerialization_Test
     template<typename T>
     struct Vector3
     {
-#if defined(__clang__)
-
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 		typedef T 	value_type;
 #elif defined(_MSC_VER)
 		using value_type = typename T;	
@@ -37,8 +35,6 @@ namespace CustomSerialization_Test
 		{
 			if constexpr (IsCorrectType<T>())
 			{
-				using V = typename T::value_type;
-
 				nlohmann::json json_collection = nlohmann::json::array();
                 json_collection.push_back(jser::DefaultSerialize<M>(obj.X, pushError));
                 json_collection.push_back(jser::DefaultSerialize<M>(obj.Y, pushError));
@@ -86,8 +82,6 @@ namespace CustomSerialization_Test
 		template<typename M, typename T>
 		std::optional<T> Deserialize(const nlohmann::json& j, jser::PushErrorType pushError) const
 		{
-			using CurrentType = std::remove_reference<T>::type;
-
 			if constexpr (IsCorrectType<T>())
 			{
 				return T(j.get<std::string>());
@@ -102,7 +96,7 @@ namespace CustomSerialization_Test
     struct Foo : jser::JSerializable
     {
         std::vector<uint64_t> foo = {15,56656565,498,48};
-        Vector3<std::bitset<4>> myVector = { std::bitset < 4>{"1100"},std::bitset < 4>{"1110"},std::bitset < 4>{"1111"}};
+        Vector3<std::bitset<4>> myVector = { std::bitset<4>{"1100"},std::bitset<4>{"1110"},std::bitset<4>{"1111"}};
 
         void compare(const Foo& Rhs)
         {

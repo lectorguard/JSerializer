@@ -8,7 +8,12 @@ namespace CustomSerializerExample
 	template<typename T>
 	struct Vector3
 	{
-		using value_type = typename T;
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+		typedef T 	value_type;
+#elif defined(_MSC_VER)
+		using value_type = typename T;	
+#endif	
+
 		value_type X;
 		value_type Y;
 		value_type Z;
@@ -28,7 +33,6 @@ namespace CustomSerializerExample
 		{
 			if constexpr (IsCorrectType<T>())
 			{
-				using V = typename T::value_type;
 				nlohmann::json json_collection = nlohmann::json::array();
 				json_collection.push_back(jser::DefaultSerialize<M>(obj.X, pushError));
 				json_collection.push_back(jser::DefaultSerialize<M>(obj.Y, pushError));

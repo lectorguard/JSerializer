@@ -45,12 +45,22 @@ namespace jser
 		template<typename M, typename T>
 		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 		{
-			using CurrentType = std::remove_reference<T>::type;
+		
+#if defined(__clang__)
+				using CurrentType = typename std::remove_reference<T>::type;
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
+				using CurrentType = std::remove_reference<T>::type;
+#endif
 	
 			if constexpr (IsCorrectType<T>())
 			{
-				using KeyType = CurrentType::key_type;
-				using ValueType = CurrentType::mapped_type;
+#if defined(__clang__)
+					using KeyType = typename CurrentType::key_type;
+					using ValueType = typename CurrentType::mapped_type;
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
+					using KeyType = CurrentType::key_type;
+					using ValueType = CurrentType::mapped_type;
+#endif
 	
 				T temp;
 				std::transform(j.begin(), j.end(), std::inserter(temp, temp.begin()), [&pushError](const nlohmann::json& json_elem) -> std::pair<KeyType, ValueType>

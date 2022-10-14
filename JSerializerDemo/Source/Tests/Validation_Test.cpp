@@ -32,9 +32,7 @@ namespace Validation_Test
 				push_error({ JSerErrorTypes::VALIDATION_ERROR, "Check if validation errors are working" });
 				return;
             }
-#if defined(__clang__)
-
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 	        std::vector<float> temp;
             std::stack<float> copy = foo_stack;
             while(!copy.empty())

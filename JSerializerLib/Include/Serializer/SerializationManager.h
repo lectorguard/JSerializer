@@ -36,7 +36,11 @@ namespace jser
 {
 	
 	template<typename M, typename T>
+#if defined(__clang__)
+	inline static std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError)
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
 	inline static constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError)
+#endif
 	{
 		static_assert(!std::is_const_v<T>, "Function ptr are used which are not following cost correctness, so no const value can be passed here");
 	
@@ -45,9 +49,7 @@ namespace jser
 			std::optional<nlohmann::json> j;
 			std::visit([&j, &obj, &pushError](auto x)
 				{
-#if defined(__clang__)
-
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 					j = x.template Serialize<M>(obj, pushError);
 #elif defined(_MSC_VER)
 					j = x.Serialize<M>(obj, pushError);
@@ -68,9 +70,8 @@ namespace jser
 			std::optional<T> obj;
 			std::visit([&obj, &j, &pushError](const auto& x) 
 				{
-#if defined(__clang__)
 
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 					obj = x.template Deserialize<M,T>(j, pushError);
 #elif defined(_MSC_VER)
 					obj = x.Deserialize<M,T>(j, pushError);
@@ -91,9 +92,8 @@ namespace jser
 			std::visit([&serializable](auto x) 
 			{
 				serializable = serializable || 
-#if defined(__clang__)
 
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 				x.template IsCorrectType<T>(); 
 #elif defined(_MSC_VER)
 				x.IsCorrectType<T>(); 
@@ -106,9 +106,17 @@ namespace jser
 	// Elem can not be const ref, because T could be another JSerializer. In that case we could only call const functions, but AddItem() can not be const. (Called during deserialization)
 	
 	template<typename M, typename T>
-	inline static constexpr nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
+#if defined(__clang__)
+		inline static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
+		inline static constexpr nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError)
+#endif
 	{
+#if defined(__clang__)
+		using CurrentType = typename std::remove_reference<decltype(elem)>::type;
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
 		using CurrentType = std::remove_reference<decltype(elem)>::type;
+#endif
 	
 		if constexpr (IsHandledByJSER<M,CurrentType>())
 		{
@@ -130,8 +138,11 @@ namespace jser
 	template<typename M, typename T>
 	inline static constexpr T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError)
 	{
+#if defined(__clang__)
+		using CurrentType = typename std::remove_reference<T>::type;
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
 		using CurrentType = std::remove_reference<T>::type;
-	
+#endif	
 		static_assert(std::is_default_constructible_v<T>, "Every type passed to JSerializer must have default constructor");
 	
 		if constexpr (IsHandledByJSER<M, CurrentType>())

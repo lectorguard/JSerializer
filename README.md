@@ -24,6 +24,7 @@
 
 * MSVC (Windows)
 * GCC
+* Clang (Version 12 or higher)
 
 ### Dependencies
 * [nlohmann json](https://github.com/nlohmann/json)

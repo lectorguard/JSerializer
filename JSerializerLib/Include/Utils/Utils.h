@@ -99,13 +99,21 @@ namespace jser
 	}
 	
 	template<typename M, typename T>
-	inline static constexpr nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
+#if defined(__clang__)
+		inline static nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
+		inline static constexpr nlohmann::json DefaultSerialize(T&& elem, PushErrorType pushError);
+#endif
 	
 	template<typename M, typename T>
 	inline static constexpr T DefaultDeserialize(const nlohmann::json& j, PushErrorType pushError);
 	
 	template<typename M, typename T>
-	inline static constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError);
+#if defined(__clang__)
+		inline static std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError);
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
+		inline static constexpr std::optional<nlohmann::json> SerializeByJSER(T&& obj, PushErrorType pushError);
+#endif
 	
 	template<typename M, typename T>
 	inline static constexpr std::optional<T> DeserializeByJSER(const nlohmann::json& j, PushErrorType pushError);
@@ -162,7 +170,11 @@ namespace jser
 		inline void DeserializeObject(std::string json, std::back_insert_iterator<T> error);
 	
 		template<typename M, typename...O>
+#if defined(__clang__)
+		inline DefaultSerializeItem CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects);
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
 		inline constexpr DefaultSerializeItem CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects);
+#endif
 	
 	private:
 	

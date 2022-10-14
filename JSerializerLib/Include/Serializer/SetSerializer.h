@@ -39,8 +39,6 @@ namespace jser
 		template<typename M, typename T>
 		std::optional<T> Deserialize(const nlohmann::json& j, PushErrorType pushError) const
 		{
-			using CurrentType = std::remove_reference<T>::type;
-	
 			if constexpr (IsCorrectType<T>())
 			{
 				using V = typename T::value_type;

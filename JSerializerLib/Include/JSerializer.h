@@ -54,7 +54,11 @@ namespace jser
 	}
 	
 	template<typename M, typename...O>
-	inline constexpr DefaultSerializeItem JSerializable::CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects)
+#if defined(__clang__)
+	inline DefaultSerializeItem JSerializable::CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects)
+#elif defined(__GNUC__) || defined(__GNUG__) || defined(_MSC_VER)
+	inline constexpr DefaultSerializeItem JSerializable::CreateSerializeItem( const std::vector<std::string>& names, O&& ... objects)	
+#endif	
 	{
 		assert(names.size() == sizeof...(objects) && " for each name there must be a parameter");
 	
@@ -68,7 +72,7 @@ namespace jser
 						Serialize<0,M>(j, parameterNames, pushError, args...);
 					}, tup);
 			},
-			[tup = std::forward_as_tuple(objects...), this](nlohmann::json j, const std::vector<std::string>& parameterNames,  PushErrorType pushError) mutable
+			[tup = std::forward_as_tuple(objects...)](nlohmann::json j, const std::vector<std::string>& parameterNames,  PushErrorType pushError) mutable
 			{
 				std::apply([&parameterNames, &j, &pushError](auto &&... args)
 					{
@@ -118,17 +122,19 @@ namespace jser
 	}
 	
 	template<size_t index, typename M, typename...O>
-#if defined(__clang__)
-
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 	void JSerializable::Serialize(nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)
 #elif defined(_MSC_VER)
 	static void JSerializable::Serialize(nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)				
 #endif
 	{
 		auto& elem = get<index>(objects...);
-	
+
+#if defined(__clang__)
+		using CurrentType = typename std::remove_reference<decltype(elem)>::type;
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
 		using CurrentType = std::remove_reference<decltype(elem)>::type;
+#endif		
 		// Implemented a prototype for carrays, but carrays are not simply lvalue assignable. Needs a lot of copies and special treatment inside generic serialization logic.
 		static_assert(!std::is_array_v<CurrentType>, "Deserialization of carray pointer is not supported, please use insted std::array");
 	
@@ -141,9 +147,8 @@ namespace jser
 	}
 	
 	template<size_t index, typename M, typename...O>
-#if defined(__clang__)
 
-#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
 	void JSerializable::Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)
 #elif defined(_MSC_VER)
 	static void JSerializable::Deserialize(const nlohmann::json& j, const std::vector<std::string>& names, PushErrorType pushError,  O&& ... objects)				
@@ -151,7 +156,11 @@ namespace jser
 	{
 		auto& elem = get<index>(objects...);
 	
+#if defined(__clang__)
+		using CurrentType = typename std::remove_reference<decltype(elem)>::type;
+#elif defined(_MSC_VER) || defined(__GNUC__) || defined(__GNUG__)
 		using CurrentType = std::remove_reference<decltype(elem)>::type;
+#endif
 		// Implemented a prototype for carrays, but carrays are not simply lvalue assignable. Needs a lot of copies and special treatment inside generic serialization logic.
 		static_assert(!std::is_array_v<CurrentType>, "Deserialization of carray pointer is not supported, please use insted std::array");
 	
