@@ -5,36 +5,36 @@ if (NOT DEFINED JSERIALIZER_ONLY_LIBRARY)
 endif()
 
 if (NOT ${JSERIALIZER_ONLY_LIBRARY})
-project (JSerializer VERSION 0.1)
-
-set(CMAKE_SUPPRESS_REGENERATION true)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+	project (JSerializer VERSION 0.1)
+	
+	set(CMAKE_SUPPRESS_REGENERATION true)
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+	
+	set(CMAKE_CXX_STANDARD 20)
+	set(CMAKE_CXX_STANDARD_REQUIRED True)
 endif()
 
 #Json Library
 set(lib_json_name nlohmann_json)
-set(lib_json_destination_path ${CMAKE_SOURCE_DIR}/JSerializerLib/ThirdParty/${lib_json_name})
+set(lib_json_destination_path ${CMAKE_CURRENT_SOURCE_DIR}/JSerializerLib/ThirdParty/${lib_json_name})
 set(lib_json_include_path ${lib_json_destination_path}/include/)
 set(lib_json_source_path ${lib_json_destination_path}/include/nlohmann)
 set(lib_json_download_path "https://github.com/nlohmann/json/releases/download/v3.11.2/include.zip")
 
 #Boost Unit Tests
 set(lib_ut_name boost_ut)
-set(lib_ut_destination_path ${CMAKE_SOURCE_DIR}/JSerializerDemo/ThirdParty/${lib_ut_name})
+set(lib_ut_destination_path ${CMAKE_CURRENT_SOURCE_DIR}/JSerializerDemo/ThirdParty/${lib_ut_name})
 set(lib_ut_include_path ${lib_ut_destination_path}/include/)
 set(lib_ut_source_path ${lib_ut_destination_path}/include/boost)
 set(lib_ut_download_path "https://github.com/boost-ext/ut/archive/refs/tags/v1.1.9.zip")
 
 #Json Serializer Library
 set(lib_jser_name JSerializerLib)
-set(lib_jser_source_path ${CMAKE_SOURCE_DIR}/${lib_jser_name}/Include)
+set(lib_jser_source_path ${CMAKE_CURRENT_SOURCE_DIR}/${lib_jser_name}/Include)
 
 #JSerializer Demo
 set(lib_demo_name JSerializerDemo)
-set(lib_demo_source_path ${CMAKE_SOURCE_DIR}/${lib_demo_name}/Source)
+set(lib_demo_source_path ${CMAKE_CURRENT_SOURCE_DIR}/${lib_demo_name}/Source)
 
 
 include(FetchContent)
