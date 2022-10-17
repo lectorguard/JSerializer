@@ -85,7 +85,9 @@ endfunction()
 # Create Json Lib 
 try_download_zip(${lib_json_name} ${lib_json_download_path} ${lib_json_destination_path})
 create_header_library(${lib_json_name} ${lib_json_source_path})
+if (NOT ${JSERIALIZER_ONLY_LIBRARY})
 target_compile_features(${lib_json_name} INTERFACE cxx_std_17)
+endif()
 target_include_directories(${lib_json_name} INTERFACE ${lib_json_include_path})
 
 if (NOT ${JSERIALIZER_ONLY_LIBRARY})
