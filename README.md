@@ -30,6 +30,23 @@
 * [nlohmann json](https://github.com/nlohmann/json)
 * C++ 20
 
+### Add library to cmake Project
+
+* Download the project by hand or with [git submodules](https://www.vogella.com/tutorials/GitSubmodules/article.html)
+* You can use the following CMake code to integrate the library
+
+```
+# By setting JSERIALIZER_ONLY_LIBRARY, only the library and its dependencies are built
+set(JSERIALIZER_ONLY_LIBRARY true)
+# Just add the subdirectory in which you copied the project
+add_subdirectory(ThirdParty/JSerializer)
+# Link the library with your application, the project will always automatically build nlohmann_json and JSerializerLib 
+# You need to link always both libraries 
+target_link_libraries(<yourAppOrLibrary> nlohmann_json JSerializerLib)
+```
+
+* Thats it
+
 ### Supported Standard Library Types 
 * std::array
 * std::list
