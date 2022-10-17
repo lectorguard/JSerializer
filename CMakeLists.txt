@@ -8,6 +8,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if (NOT DEFINED CMAKE_ONLY_LIBRARY)
+	set(CMAKE_ONLY_LIBRARY false)
+endif()
+
 #Json Library
 set(lib_json_name nlohmann_json)
 set(lib_json_destination_path ${CMAKE_SOURCE_DIR}/JSerializerLib/ThirdParty/${lib_json_name})
@@ -82,15 +86,20 @@ create_header_library(${lib_json_name} ${lib_json_source_path})
 target_compile_features(${lib_json_name} INTERFACE cxx_std_17)
 target_include_directories(${lib_json_name} INTERFACE ${lib_json_include_path})
 
+if (NOT ${CMAKE_ONLY_LIBRARY})
 # Create ut Lib
 try_download_zip(${lib_ut_name} ${lib_ut_download_path} ${lib_ut_destination_path})
 create_header_library(${lib_ut_name} ${lib_ut_source_path})
 target_compile_features(${lib_ut_name} INTERFACE cxx_std_20)
 target_include_directories(${lib_ut_name} INTERFACE ${lib_ut_include_path})
+endif()
 
 # Add projects
 add_subdirectory(JSerializerLib)
-add_subdirectory(JSerializerDemo)
+if (NOT ${CMAKE_ONLY_LIBRARY})
+	add_subdirectory(JSerializerDemo)
+endif()
+
 
 
 
