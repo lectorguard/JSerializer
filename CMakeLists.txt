@@ -9,9 +9,9 @@ if (NOT ${JSERIALIZER_ONLY_LIBRARY})
 	
 	set(CMAKE_CXX_STANDARD 20)
 	set(CMAKE_CXX_STANDARD_REQUIRED True)
-	message(WARNING "JSER library and tests are build.")
+	message(STATUS "JSER library and tests are build.")
 else()
-	message(WARNING "Only JSER library is built.")
+	message(STATUS "Only JSER library is built.")
 endif()
 
 #Json Library
