@@ -49,9 +49,9 @@ function(TRY_DOWNLOAD_ZIP PACKAGE_NAME DOWNLOAD_PATH DESTINATION_PATH)
 		message(STATUS "Download Package ${PACKAGE_NAME} ...")
 		FetchContent_Declare(
 						${PACKAGE_NAME} 
-						URL ${DOWNLOAD_PATH} 
-						SOURCE_DIR ${DESTINATION_PATH}
 						DOWNLOAD_EXTRACT_TIMESTAMP false
+      						SOURCE_DIR "${DESTINATION_PATH}"
+	    					URL "${DOWNLOAD_PATH}" 
 						)
 		FetchContent_MakeAvailable(${PACKAGE_NAME})
 		message(STATUS "Done.")
