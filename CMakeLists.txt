@@ -1,9 +1,6 @@
 cmake_minimum_required (VERSION 3.2)
 
-if (NOT DEFINED JSERIALIZER_ONLY_LIBRARY)
-	set(JSERIALIZER_ONLY_LIBRARY false)
-endif()
-
+option(JSERIALIZER_ONLY_LIBRARY "If on, also builds test suitcase" OFF)
 if (NOT ${JSERIALIZER_ONLY_LIBRARY})
 	project (JSerializer VERSION 0.1)
 	
@@ -72,9 +69,11 @@ function(CREATE_HEADER_LIBRARY LIBRARY_NAME LIBRARY_PATH)
 	message(STATUS "Found files for library ${LIBRARY_NAME} with path ${LIBRARY_PATH}")
 	#message(STATUS "${LIBRARY_FILES}")
 	add_library(${LIBRARY_NAME} INTERFACE)
-	# Creating a dummy library to force the visual studio project creation
-	add_library(${LIBRARY_NAME}_Preview STATIC ${LIBRARY_FILES})
-	set_target_properties(${LIBRARY_NAME}_Preview PROPERTIES LINKER_LANGUAGE CXX)
+ 	if (NOT ${JSERIALIZER_ONLY_LIBRARY})
+		# Creating a dummy library to force the visual studio project creation
+		add_library(${LIBRARY_NAME}_Preview STATIC ${LIBRARY_FILES})
+		set_target_properties(${LIBRARY_NAME}_Preview PROPERTIES LINKER_LANGUAGE CXX)
+  	endif()
 	
 	source_group(TREE "${LIBRARY_PATH}/" PREFIX "Include" FILES ${LIBRARY_FILES})
 	message(STATUS "Created successfully library with name: ${LIBRARY_NAME}")
