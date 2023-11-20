@@ -32,15 +32,27 @@ namespace AssociationsExample
 		using namespace boost::ut;
 		"main"_test = []
 		{
+			// Set values
 			TestStruct2 foo;
 			foo.foo_uniquePtr = std::make_unique<TestStruct1>();
+			foo.foo_testStruct1.foo_name = "This string has changed";
 			std::list<jser::JSerError> errorList;
+			
 			std::string result = foo.SerializeObjectString(std::back_inserter(errorList));
 			assert(errorList.size() == 0);
 
 			// TestStruct2 will also deserialize TestStruct1 inside foo
 			TestStruct2 deserialized;
 			deserialized.DeserializeObject(result, std::back_inserter(errorList));
+			assert(errorList.size() == 0);
+
+
+			// Also testing binary json logic
+			std::vector<uint8_t> bson_result = foo.SerializeObjectBson(std::back_inserter(errorList));
+			assert(errorList.size() == 0);
+
+			TestStruct2 bson_deserialized;
+			bson_deserialized.DeserializeObject(bson_result, std::back_inserter(errorList));
 			assert(errorList.size() == 0);
 		};
 	};

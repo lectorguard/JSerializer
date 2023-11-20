@@ -156,6 +156,9 @@ namespace jser
 	
 		template<JSerErrorCompatible T>
 		inline std::string SerializeObjectString(std::back_insert_iterator<T> error);
+
+		template<JSerErrorCompatible T>
+		inline std::vector<uint8_t> SerializeObjectBson(std::back_insert_iterator<T> error);
 	
 		template<JSerErrorCompatible T>
 		inline nlohmann::json SerializeObjectJson(std::back_insert_iterator<T> error);
@@ -168,6 +171,9 @@ namespace jser
 	
 		template<JSerErrorCompatible T>
 		inline void DeserializeObject(std::string json, std::back_insert_iterator<T> error);
+
+		template<JSerErrorCompatible T>
+		inline void DeserializeObject(std::vector<uint8_t> bson, std::back_insert_iterator<T> error);
 	
 		template<typename M, typename...O>
 #if defined(__clang__)
